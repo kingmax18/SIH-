@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bhu-Abhilekh AI | Land Record Digitization Platform | SIH 2024</title>
+<meta name="description" content="AI-powered Land Record Digitization using OCR/NLP — SIH 2024 Prototype"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+:root{
+  /* Palette */
+  --bg-base:#060e1e;
+  --bg-1:#0b1628;
+  --bg-2:#101f38;
+  --bg-3:#152742;
+  --bg-4:#1c3254;
+  --glass-1:rgba(11,22,40,0.92);
+  --glass-2:rgba(16,31,56,0.7);
+  --border-1:rgba(56,189,248,0.08);
+  --border-2:rgba(56,189,248,0.18);
+  --border-3:rgba(56,189,248,0.35);
+  /* Text */
+  --t1:#eef4ff;--t2:#8faec9;--t3:#4a6885;--t4:#2e4a63;
+  /* Accent */
+  --blue:#3b82f6;--blue-d:#1d4ed8;--blue-glow:rgba(59,130,246,0.3);
+  --sky:#38bdf8;--sky-glow:rgba(56,189,248,0.25);
+  --green:#10b981;--green-glow:rgba(16,185,129,0.25);
+  --amber:#f59e0b;--amber-glow:rgba(245,158,11,0.25);
+  --red:#ef4444;--red-glow:rgba(239,68,68,0.25);
+  --purple:#8b5cf6;--pink:#ec4899;
+  /* India */
+  --saffron:#ff9800;--navy-india:#0d1a6e;--green-india:#138808;
+  /* Type */
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--deva:'Noto Sans Devanagari','Inter',sans-serif;
+  /* Radius */
+  --r6:6px;--r8:8px;--r10:10px;--r12:12px;--r16:16px;--r20:20px;
+  /* Shadow */
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md:0 8px 24px rgba(0,0,0,0.5);
+  --shadow-lg:0 20px 48px rgba(0,0,0,0.7);
+  --shadow-glow-blue:0 0 20px rgba(59,130,246,0.2);
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg-base);color:var(--t1);overflow:hidden;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg-4);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--t4);}
+button,input,select,textarea{font-family:var(--font);}
+button{cursor:pointer;}
+
+/* ── APP SHELL ─────────────────────────────────────── */
+#app{display:flex;flex-direction:column;height:100vh;background:var(--bg-base);}
+
+/* ── GOV BAR ────────────────────────────────────────── */
+#govbar{
+  background:linear-gradient(90deg,var(--navy-india) 0%,#0d2060 50%,#091430 100%);
+  border-bottom:1px solid rgba(255,152,0,0.25);
+  padding:5px 20px;font-size:0.7rem;color:rgba(203,220,245,0.8);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+#govbar .g-left{display:flex;align-items:center;gap:10px;}
+#govbar .g-right{display:flex;align-items:center;gap:16px;font-size:0.68rem;}
+.tricolor{display:flex;height:3px;width:28px;border-radius:2px;overflow:hidden;margin-right:4px;}
+.tricolor span{flex:1;}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5);}60%{box-shadow:0 0 0 4px rgba(16,185,129,0);}}
+
+/* ── NAVBAR ─────────────────────────────────────────── */
+#navbar{
+  background:rgba(6,14,30,0.98);
+  border-bottom:1px solid var(--border-1);
+  padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  backdrop-filter:blur(16px);position:relative;z-index:50;
+}
+#navbar::after{content:'';position:absolute;inset-x:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-2),transparent);}
+
+.brand{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.brand-logo{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,#1a3a8f 0%,#0284c7 100%);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  box-shadow:0 4px 16px rgba(2,132,199,0.4),inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.brand-name{
+  font-size:1.25rem;font-weight:800;letter-spacing:-0.03em;
+  background:linear-gradient(135deg,#ffffff 0%,#93c5fd 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand-sub{font-size:0.71rem;color:var(--t3);margin-top:2px;font-weight:400;}
+.sih-chip{
+  padding:2px 8px;border-radius:6px;font-size:0.64rem;font-weight:700;
+  letter-spacing:0.06em;background:rgba(59,130,246,0.15);
+  color:var(--sky);border:1px solid rgba(56,189,248,0.25);
+}
+
+.nav-pills{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);
+  border:1px solid var(--border-1);border-radius:999px;padding:5px 16px;}
+.nav-stat{display:flex;align-items:center;gap:5px;font-size:0.76rem;}
+.nav-stat .ns-label{color:var(--t3);}
+.nav-stat .ns-val{font-weight:700;font-family:var(--mono);}
+.nav-stat .ns-val.green{color:var(--green);}
+.nav-stat .ns-val.amber{color:var(--amber);background:rgba(245,158,11,0.12);padding:1px 6px;border-radius:4px;}
+.nav-divider{width:1px;height:16px;background:var(--border-1);}
+
+.nav-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.lang-switcher{
+  display:flex;background:rgba(255,255,255,0.04);border:1px solid var(--border-1);
+  border-radius:10px;padding:3px;gap:2px;
+}
+.lang-btn{
+  background:transparent;border:none;padding:4px 9px;border-radius:7px;
+  font-size:0.73rem;color:var(--t3);font-weight:500;transition:all 0.15s;
+}
+.lang-btn.active{background:var(--blue);color:#fff;font-weight:700;box-shadow:0 2px 8px var(--blue-glow);}
+.role-picker{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border-1);
+  border-radius:10px;padding:7px 12px;color:var(--t1);font-size:0.8rem;
+  font-weight:600;outline:none;cursor:pointer;
+  background-image:linear-gradient(rgba(255,255,255,0.03),rgba(255,255,255,0.03));
+}
+.icon-btn{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border-1);
+  border-radius:10px;padding:8px 11px;color:var(--t2);font-size:0.9rem;
+  transition:all 0.15s;
+}
+.icon-btn:hover{background:rgba(255,255,255,0.08);color:var(--t1);}
+
+/* ── BODY LAYOUT ────────────────────────────────────── */
+#body{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ────────────────────────────────────────── */
+#sidebar{
+  width:230px;min-width:230px;
+  background:rgba(6,14,30,0.98);
+  border-right:1px solid var(--border-1);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:10px 8px;overflow-y:auto;
+  position:relative;
+}
+#sidebar::after{content:'';position:absolute;right:0;top:20%;bottom:20%;width:1px;
+  background:linear-gradient(180deg,transparent,var(--border-2),transparent);}
+
+.sb-section-lbl{
+  font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--t4);padding:4px 10px 8px;
+}
+.sb-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:9px 10px;border-radius:var(--r8);border:1px solid transparent;
+  background:transparent;color:var(--t3);font-size:0.81rem;font-weight:500;
+  cursor:pointer;transition:all 0.15s;margin-bottom:1px;text-align:left;
+}
+.sb-btn:hover{background:rgba(255,255,255,0.04);color:var(--t2);}
+.sb-btn.active{
+  background:linear-gradient(135deg,rgba(37,99,235,0.25),rgba(14,77,176,0.15));
+  border-color:rgba(37,99,235,0.35);color:var(--t1);font-weight:600;
+  box-shadow:0 2px 12px rgba(37,99,235,0.15);
+}
+.sb-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0;margin-right:8px;
+  background:rgba(255,255,255,0.04);}
+.sb-btn.active .sb-icon{background:rgba(59,130,246,0.2);}
+.sb-badge{font-size:0.65rem;font-weight:700;padding:1px 7px;border-radius:999px;
+  background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.25);}
+.sb-badge.sky{background:rgba(56,189,248,0.12);color:var(--sky);border-color:rgba(56,189,248,0.2);}
+
+.sb-widget{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border-1);border-radius:var(--r10);
+  padding:12px;font-size:0.75rem;margin-top:8px;
+}
+.mini-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:999px;margin:7px 0;overflow:hidden;}
+.mini-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--sky));}
+
+/* ── CONTENT AREA ───────────────────────────────────── */
+#content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.view{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.view.active{display:flex;}
+
+/* ── UTILITY ────────────────────────────────────────── */
+.card{background:var(--glass-1);border:1px solid var(--border-1);border-radius:var(--r12);}
+.card-glow{box-shadow:var(--shadow-glow-blue);}
+.scroll{overflow-y:auto;}
+.pad{padding:20px 24px;}
+
+/* ── BUTTONS ────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r8);
+  font-weight:600;font-size:0.8rem;border:none;transition:all 0.18s;cursor:pointer;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;
+  box-shadow:0 2px 12px rgba(37,99,235,0.35);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(37,99,235,0.5);}
+.btn-success{background:linear-gradient(135deg,#059669,#047857);color:#fff;
+  box-shadow:0 2px 12px rgba(5,150,105,0.3);}
+.btn-success:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(5,150,105,0.45);}
+.btn-danger{background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.25);}
+.btn-danger:hover{background:rgba(239,68,68,0.2);}
+.btn-ghost{background:rgba(255,255,255,0.05);color:var(--t2);border:1px solid var(--border-1);}
+.btn-ghost:hover{background:rgba(255,255,255,0.09);color:var(--t1);}
+
+/* ── BADGES ─────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;
+  border-radius:999px;font-size:0.69rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;}
+.b-green{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);}
+.b-amber{background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);}
+.b-red{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25);}
+.b-blue{background:rgba(56,189,248,0.12);color:var(--sky);border:1px solid rgba(56,189,248,0.25);}
+.b-purple{background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.25);}
+.b-gray{background:rgba(255,255,255,0.06);color:var(--t2);border:1px solid var(--border-1);}
+
+/* ── CONF METER ─────────────────────────────────────── */
+.conf-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;margin-top:4px;}
+.conf-fill{height:100%;border-radius:999px;transition:width 0.4s ease;}
+
+/* ─── REVIEW BREADCRUMB ─────────────────────────────── */
+#rev-bar{
+  padding:11px 20px;background:rgba(6,14,30,0.98);border-bottom:1px solid var(--border-1);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;flex-wrap:wrap;
+}
+.rev-id{font-size:0.92rem;font-weight:800;font-family:var(--mono);letter-spacing:-0.01em;}
+
+/* ── SPLIT PANELS ───────────────────────────────────── */
+#review-panels{flex:1;display:grid;grid-template-columns:1fr 1.1fr;overflow:hidden;}
+
+/* ─── LEFT: DOC VIEWER ──────────────────────────────── */
+#doc-viewer{display:flex;flex-direction:column;border-right:1px solid var(--border-1);overflow:hidden;background:#08111f;}
+#doc-toolbar{
+  padding:9px 14px;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,14,30,0.98);border-bottom:1px solid var(--border-1);flex-shrink:0;gap:8px;flex-wrap:wrap;
+}
+#doc-canvas{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:28px 24px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(59,130,246,0.04) 0%,transparent 60%),
+             repeating-linear-gradient(0deg,rgba(255,255,255,0.012) 0px,transparent 1px,transparent 24px),
+             repeating-linear-gradient(90deg,rgba(255,255,255,0.012) 0px,transparent 1px,transparent 24px),
+             #07101e;}
+
+/* ─── REALISTIC DOCUMENT ────────────────────────────── */
+#doc-paper{
+  width:620px;min-width:620px;
+  background:#fdf8ef;
+  border-radius:2px;
+  position:relative;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.06),
+    0 12px 40px rgba(0,0,0,0.7),
+    0 40px 80px rgba(0,0,0,0.45),
+    inset 0 0 0 1px rgba(0,0,0,0.08);
+  transition:transform 0.15s ease;
+  transform-origin:top center;
+  overflow:hidden;
+  font-family:var(--deva);
+}
+
+/* Paper texture overlay */
+#doc-paper::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.6;
+  mix-blend-mode:multiply;
+}
+
+/* Aged paper gradient */
+#doc-paper::after{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 10% 5%, rgba(180,130,60,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 8%, rgba(160,110,40,0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 95%, rgba(140,100,40,0.08) 0%, transparent 40%),
+    linear-gradient(180deg,rgba(220,190,140,0.06) 0%,transparent 30%,transparent 70%,rgba(200,170,120,0.06) 100%);
+}
+
+/* Left binding shadow */
+.doc-inner{position:relative;z-index:1;padding:0;}
+.doc-binding{
+  position:absolute;left:0;top:0;bottom:0;width:22px;z-index:2;
+  background:linear-gradient(90deg,rgba(140,100,50,0.18) 0%,rgba(180,140,80,0.09) 60%,transparent 100%);
+  border-right:1px solid rgba(160,120,60,0.15);
+}
+.doc-fold-line{
+  position:absolute;left:22px;top:0;bottom:0;width:1px;
+  background:linear-gradient(180deg,transparent,rgba(160,120,60,0.12) 10%,rgba(160,120,60,0.12) 90%,transparent);
+}
+
+/* Doc sections */
+.doc-header-strip{
+  background:linear-gradient(135deg,#b91c1c 0%,#991b1b 100%);
+  padding:10px 28px 10px 38px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;
+}
+.doc-header-strip::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#b45309,#d97706,#b45309);}
+
+.doc-state-em{color:rgba(255,255,255,0.95);font-size:0.68rem;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;}
+.doc-state-hi{font-family:var(--deva);font-size:0.95rem;font-weight:700;color:#fff;}
+
+.ashoka-wheel{
+  width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;color:#fff;opacity:0.85;
+}
+
+.doc-meta-bar{
+  background:linear-gradient(90deg,#f5e6c8,#fdf0d5,#f5e6c8);
+  border-bottom:2px solid #c8902a;
+  padding:6px 28px 6px 38px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:4px;
+}
+.doc-meta-item{font-size:0.68rem;color:#5c3d0a;font-weight:600;display:flex;flex-direction:column;}
+.doc-meta-item .dmi-lbl{font-size:0.59rem;color:#78521a;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;}
+.doc-meta-item .dmi-val{font-size:0.75rem;font-weight:700;color:#3d2408;}
+
+.doc-title-row{
+  background:#fdf0d5;border-bottom:1px solid #dea030;
+  padding:10px 28px 8px 38px;text-align:center;
+}
+.doc-title-main{font-family:var(--deva);font-size:1.15rem;font-weight:700;color:#1a0a00;line-height:1.3;}
+.doc-title-sub{font-size:0.7rem;color:#78521a;letter-spacing:0.05em;margin-top:2px;}
+
+.doc-body{padding:14px 20px 14px 32px;}
+
+/* Main khatauni table */
+.kh-table{width:100%;border-collapse:collapse;font-size:0.72rem;margin-bottom:12px;}
+.kh-table th{
+  background:linear-gradient(180deg,#f5d990,#ecc53a);
+  color:#3d2408;font-weight:700;
+  padding:7px 6px;border:1px solid #c8902a;text-align:center;
+  font-family:var(--deva);line-height:1.3;
+}
+.kh-table td{
+  padding:8px 6px;border:1px solid #d4a84b;color:#1a0a00;
+  vertical-align:top;background:#fffdf5;font-size:0.73rem;line-height:1.5;
+}
+.kh-table td.center{text-align:center;}
+.kh-table tr:nth-child(even) td{background:#fef9ec;}
+.col-no{font-size:0.6rem;color:#78521a;text-align:center;padding:2px;border:1px solid #d4a84b;
+  background:linear-gradient(180deg,#fef3c7,#fde68a);}
+.field-name{font-weight:700;font-size:0.78rem;color:#1c0f00;}
+.field-father{font-size:0.67rem;color:#5c3d0a;margin-top:2px;}
+.field-village{font-size:0.64rem;color:#78521a;margin-top:1px;}
+.field-share{font-size:0.65rem;color:#9a1c1c;font-weight:700;margin-top:2px;}
+.khasra-num{font-family:var(--mono);font-weight:800;font-size:0.88rem;color:#1a0a00;}
+.area-num{font-family:var(--mono);font-weight:800;font-size:0.85rem;color:#1a0a00;}
+.area-sub{font-size:0.6rem;color:#78521a;}
+.tax-num{font-family:var(--mono);font-weight:700;font-size:0.8rem;color:#991b1b;}
+
+/* Column header numbers */
+.kh-col-nums tr td{font-size:0.59rem;color:#78521a;text-align:center;font-style:italic;
+  padding:2px;background:#fffbeb;border:1px solid #d4a84b;}
+
+/* Notes row */
+.mutation-row td{background:#fffbf0;padding:9px 8px;border:1px solid #d4a84b;}
+.mutation-label{font-size:0.65rem;font-weight:700;color:#78521a;margin-bottom:4px;letter-spacing:0.03em;}
+.mutation-text{font-family:var(--deva);font-size:0.73rem;color:#2d1a08;line-height:1.6;}
+.mutation-text.cursive{font-style:italic;}
+
+/* Footer strip */
+.doc-footer{
+  padding:10px 24px 14px 36px;
+  background:linear-gradient(180deg,#fdf0d5,#f9e8b8);
+  border-top:1px dashed #c8902a;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  position:relative;
+}
+/* Seal */
+.seal{
+  width:84px;height:84px;border-radius:50%;
+  border:2.5px solid #9a1c1c;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;transform:rotate(-14deg);
+  background:radial-gradient(circle,rgba(255,245,230,0.9),rgba(254,228,196,0.9));
+  box-shadow:inset 0 0 10px rgba(154,28,28,0.12),0 2px 8px rgba(0,0,0,0.15);
+  position:relative;overflow:hidden;
+}
+.seal::before{
+  content:'';position:absolute;inset:4px;border-radius:50%;
+  border:1px dashed rgba(154,28,28,0.4);
+}
+.seal-text{font-size:0.55rem;font-weight:800;color:#9a1c1c;line-height:1.4;z-index:1;font-family:var(--deva);}
+.seal-star{font-size:0.7rem;color:#9a1c1c;z-index:1;}
+
+/* Signature */
+.doc-sig{text-align:right;font-size:0.68rem;color:#3d2408;}
+.sig-line{
+  display:block;font-family:'Dancing Script',cursive,'Noto Sans Devanagari',serif;
+  font-size:1.25rem;color:#0d2d6e;letter-spacing:-0.01em;margin-bottom:2px;
+}
+
+/* Watermark */
+.doc-watermark{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:0;text-align:center;
+  opacity:0.028;color:#451a03;
+  font-family:var(--deva);font-size:110px;font-weight:900;line-height:1;
+  user-select:none;letter-spacing:-5px;
+}
+
+/* Red entry lines - decorative ruled lines */
+.doc-lines{
+  position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;
+  background-image:repeating-linear-gradient(
+    180deg,transparent 0px,transparent 21px,rgba(220,100,100,0.07) 21px,rgba(220,100,100,0.07) 22px
+  );
+}
+
+/* OCR overlay boxes */
+.ocr-box{
+  position:absolute;border-radius:2px;cursor:pointer;
+  transition:all 0.15s;pointer-events:all;
+  border-width:1.5px;border-style:solid;
+}
+.ocr-box.ok{border-color:rgba(16,185,129,0.6);background:rgba(16,185,129,0.08);}
+.ocr-box.med{border-color:rgba(245,158,11,0.7);background:rgba(245,158,11,0.08);}
+.ocr-box.low{border-color:rgba(239,68,68,0.8);background:rgba(239,68,68,0.1);}
+.ocr-box:hover,.ocr-box.lit{
+  background:rgba(56,189,248,0.2)!important;border-color:var(--sky)!important;
+  box-shadow:0 0 0 2px rgba(56,189,248,0.2),0 0 12px rgba(56,189,248,0.3);z-index:20;
+}
+.ocr-tooltip{
+  position:absolute;bottom:calc(100% + 5px);left:0;white-space:nowrap;
+  background:rgba(6,14,30,0.98);border:1px solid var(--border-2);
+  border-radius:5px;padding:4px 9px;font-size:0.66rem;font-family:sans-serif;
+  color:#fff;font-weight:700;display:none;z-index:30;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
+}
+.ocr-box:hover .ocr-tooltip,.ocr-box.lit .ocr-tooltip{display:block;}
+
+#doc-statusbar{
+  padding:6px 14px;background:rgba(6,14,30,0.98);border-top:1px solid var(--border-1);
+  display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;
+  color:var(--t3);flex-shrink:0;
+}
+.legend-dot{display:inline-flex;align-items:center;gap:4px;}
+
+/* ─── RIGHT: FIELDS PANEL ───────────────────────────── */
+#fields-panel{display:flex;flex-direction:column;overflow:hidden;background:rgba(8,17,31,0.98);}
+#fp-header{
+  padding:13px 18px;border-bottom:1px solid var(--border-1);flex-shrink:0;
+  background:rgba(6,14,30,0.98);
+}
+#fp-alerts{
+  border-bottom:1px solid rgba(245,158,11,0.15);flex-shrink:0;display:none;
+  background:rgba(120,53,15,0.08);padding:10px 16px;
+}
+#fp-fields{flex:1;overflow-y:auto;padding:14px 16px;}
+#fp-footer{
+  padding:12px 18px;border-top:1px solid var(--border-1);flex-shrink:0;
+  background:rgba(6,14,30,0.98);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+}
+
+.fp-group-lbl{
+  font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;
+  color:var(--t4);padding:8px 2px 6px;
+  border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:8px;
+}
+.field-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:var(--r8);padding:10px 12px;margin-bottom:7px;cursor:pointer;
+  transition:all 0.15s;
+}
+.field-card:hover,.field-card.lit{
+  background:rgba(56,189,248,0.06);border-color:rgba(56,189,248,0.2);
+  box-shadow:0 2px 12px rgba(56,189,248,0.08);
+}
+.field-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.field-lbl{font-size:0.74rem;font-weight:600;color:var(--t2);}
+.field-actions{display:flex;align-items:center;gap:6px;}
+.edit-btn{background:transparent;border:none;color:var(--t4);font-size:0.8rem;padding:2px 4px;border-radius:4px;transition:all 0.12s;}
+.edit-btn:hover{color:var(--sky);background:rgba(56,189,248,0.1);}
+.field-val{font-size:0.88rem;font-weight:700;color:var(--t1);line-height:1.35;word-break:break-word;}
+.field-val.mono{font-family:var(--mono);}
+.field-edited{font-size:0.62rem;font-weight:700;padding:1px 6px;border-radius:3px;
+  background:rgba(56,189,248,0.12);color:var(--sky);}
+.edit-wrap{display:none;margin-top:8px;}
+.edit-wrap.show{display:flex;gap:6px;}
+.field-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--sky);
+  border-radius:6px;padding:6px 10px;color:#fff;font-size:0.82rem;outline:none;}
+
+/* Alert card */
+.alert-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(245,158,11,0.2);
+  border-radius:var(--r8);padding:9px 12px;margin-bottom:8px;
+}
+.alert-code{font-size:0.63rem;font-weight:700;font-family:var(--mono);
+  padding:1px 6px;border-radius:3px;background:rgba(245,158,11,0.15);color:var(--amber);}
+.alert-msg{font-size:0.76rem;color:var(--t1);margin-top:5px;line-height:1.45;}
+.alert-override-btn{
+  margin-top:7px;background:transparent;border:1px solid rgba(245,158,11,0.3);
+  border-radius:5px;padding:4px 10px;font-size:0.7rem;color:var(--amber);cursor:pointer;transition:all 0.15s;
+}
+.alert-override-btn:hover{background:rgba(245,158,11,0.12);}
+
+/* ── DASHBOARD ──────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.kpi-card{
+  padding:20px;border-radius:var(--r12);border:1px solid var(--border-1);
+  background:var(--glass-1);position:relative;overflow:hidden;
+}
+.kpi-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.015),transparent);border-radius:inherit;}
+.kpi-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:12px;}
+.kpi-lbl{font-size:0.74rem;color:var(--t3);font-weight:500;margin-bottom:6px;}
+.kpi-val{font-size:1.9rem;font-weight:800;font-family:var(--mono);letter-spacing:-0.02em;line-height:1;}
+.kpi-sub{font-size:0.7rem;color:var(--t3);margin-top:6px;display:flex;align-items:center;gap:4px;}
+.kpi-sub.up{color:var(--green);}
+
+/* Grid helpers */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* ── TABLE ──────────────────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse;font-size:0.8rem;}
+.tbl th{padding:11px 16px;font-size:0.67rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.07em;color:var(--t3);text-align:left;
+  background:rgba(6,14,30,0.98);border-bottom:1px solid var(--border-1);white-space:nowrap;}
+.tbl td{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+.tbl tr:hover td{background:rgba(255,255,255,0.015);}
+.tbl tr:last-child td{border-bottom:none;}
+
+/* ── PROGRESS BAR ───────────────────────────────────── */
+.prog-wrap{display:flex;align-items:center;gap:10px;}
+.prog-track{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:999px;}
+
+/* ── QUEUE FILTERS ──────────────────────────────────── */
+.filter-strip{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-chip{
+  padding:5px 12px;border-radius:8px;border:1px solid var(--border-1);
+  background:rgba(255,255,255,0.03);color:var(--t3);font-size:0.76rem;font-weight:500;cursor:pointer;transition:all 0.15s;
+}
+.filter-chip.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:var(--t1);font-weight:700;}
+.search-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border-1);border-radius:9px;padding:7px 12px;}
+.search-input{background:transparent;border:none;color:var(--t1);font-size:0.8rem;outline:none;width:240px;}
+.search-input::placeholder{color:var(--t3);}
+
+/* ── UPLOAD DROP ZONE ───────────────────────────────── */
+.drop-zone{
+  border:2px dashed rgba(59,130,246,0.3);border-radius:var(--r12);
+  background:rgba(59,130,246,0.03);padding:36px;text-align:center;cursor:pointer;
+  transition:all 0.2s;
+}
+.drop-zone:hover,.drop-zone.over{
+  border-color:var(--sky);background:rgba(56,189,248,0.06);
+  box-shadow:0 0 20px rgba(56,189,248,0.08);
+}
+.pipeline-step{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;font-size:0.82rem;}
+.ps-done{background:rgba(16,185,129,0.08);color:#34d399;border:1px solid rgba(16,185,129,0.2);}
+.ps-run{background:rgba(56,189,248,0.08);color:var(--sky);border:1px solid rgba(56,189,248,0.2);}
+.ps-wait{background:rgba(255,255,255,0.03);color:var(--t3);border:1px solid var(--border-1);}
+
+/* ── GIS MAP ────────────────────────────────────────── */
+.parcel{stroke-width:1.5;cursor:pointer;transition:all 0.18s;}
+.parcel:hover,.parcel.sel{stroke-width:2.5;filter:brightness(1.25);}
+.parcel.sel{stroke-width:3;}
+
+/* ── INTEGRATIONS ───────────────────────────────────── */
+.int-card{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.int-status{display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:700;}
+.int-dot{width:7px;height:7px;border-radius:50%;}
+.int-dot.op{background:var(--green);animation:pulse 2s infinite;}
+.int-dot.sync{background:var(--sky);}
+
+/* ── ADMIN ──────────────────────────────────────────── */
+input[type=range]{accent-color:var(--sky);width:100%;cursor:pointer;margin-top:6px;}
+
+/* ── MODAL ──────────────────────────────────────────── */
+#modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(8px);z-index:900;align-items:center;justify-content:center;}
+#modal-bg.open{display:flex;}
+.modal-box{
+  background:linear-gradient(160deg,#0f1e38,#091428);
+  border:1px solid rgba(245,158,11,0.35);border-radius:16px;
+  width:100%;max-width:500px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.9),0 0 0 1px rgba(245,158,11,0.1);overflow:hidden;
+}
+.modal-head{
+  padding:16px 20px;
+  background:linear-gradient(135deg,rgba(120,53,15,0.25),rgba(92,40,10,0.15));
+  border-bottom:1px solid rgba(245,158,11,0.2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head h3{font-size:0.95rem;font-weight:700;color:#fbbf24;}
+.modal-close{background:transparent;border:none;color:var(--t3);font-size:1.1rem;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.modal-close:hover{background:rgba(255,255,255,0.06);color:var(--t1);}
+.modal-body{padding:22px;display:flex;flex-direction:column;gap:14px;}
+.modal-body label{font-size:0.76rem;font-weight:600;color:var(--t2);display:block;margin-bottom:6px;}
+.modal-body textarea{
+  width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-2);
+  border-radius:8px;padding:10px 12px;color:var(--t1);font-size:0.82rem;resize:vertical;outline:none;
+}
+.modal-body textarea:focus{border-color:var(--sky);}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
+
+/* ── TOAST ──────────────────────────────────────────── */
+#toast-zone{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{
+  display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-radius:10px;
+  font-size:0.81rem;font-weight:500;max-width:360px;
+  animation:toastIn 0.25s ease-out;pointer-events:all;cursor:pointer;
+  box-shadow:0 8px 28px rgba(0,0,0,0.6);
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:translateX(0);}}
+.toast-s{background:rgba(4,60,45,0.97);border:1px solid rgba(16,185,129,0.4);color:#fff;}
+.toast-i{background:rgba(7,28,58,0.97);border:1px solid rgba(56,189,248,0.4);color:#fff;}
+.toast-w{background:rgba(60,35,3,0.97);border:1px solid rgba(245,158,11,0.4);color:#fff;}
+.toast-e{background:rgba(60,5,5,0.97);border:1px solid rgba(239,68,68,0.4);color:#fff;}
+
+/* ── ANIMATIONS ─────────────────────────────────────── */
+.spin{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fade-in{animation:fadeIn 0.3s ease-out;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* Page header helper */
+.page-hdr{padding:20px 24px 0;flex-shrink:0;}
+.page-hdr h2{font-size:1.35rem;font-weight:800;letter-spacing:-0.025em;}
+.page-hdr p{font-size:0.8rem;color:var(--t3);margin-top:4px;}
+.padded{padding:18px 24px;}
+.scroll-y{overflow-y:auto;flex:1;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ GOV BAR ═══════════════════════════════════════ -->
+<div id="govbar">
+  <div class="g-left">
+    <div class="tricolor"><span style="background:#ff9800;"></span><span style="background:#fff;"></span><span style="background:#138808;"></span></div>
+    <strong style="color:#fde68a;letter-spacing:0.04em;">GOVERNMENT OF INDIA</strong>
+    <span style="color:var(--t3);">•</span>
+    <span>Ministry of Rural Development &nbsp;•&nbsp; Department of Land Resources &nbsp;•&nbsp; DILRMP</span>
+  </div>
+  <div class="g-right">
+    <span><span class="pulse-dot"></span> &nbsp;DILRMP Central: Live Sync</span>
+    <span style="color:var(--border-2);">|</span>
+    <span>Bhu-Vision AI Engine v3.2</span>
+    <span style="color:var(--border-2);">|</span>
+    <span id="cur-time" style="font-family:var(--mono);"></span>
+  </div>
+</div>
+
+<!-- ══ NAVBAR ════════════════════════════════════════ -->
+<div id="navbar">
+  <div class="brand">
+    <div class="brand-logo">🗺️</div>
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="brand-name">भू-अभिलेख AI</span>
+        <span class="sih-chip">SIH 2024</span>
+      </div>
+      <div class="brand-sub" id="brand-sub">Intelligent Land Record Digitization & Validation System</div>
+    </div>
+  </div>
+
+  <div class="nav-pills">
+    <div class="nav-stat"><span class="ns-label" id="lbl-acc">OCR Accuracy</span>&nbsp;<span class="ns-val green">93.4%</span></div>
+    <div class="nav-divider"></div>
+    <div class="nav-stat"><span class="ns-label" id="lbl-pend">Pending</span>&nbsp;<span class="ns-val amber" id="pending-val">2</span></div>
+    <div class="nav-divider"></div>
+    <div class="nav-stat"><span class="ns-label">Verified</span>&nbsp;<span class="ns-val green" id="verified-val">1</span></div>
+  </div>
+
+  <div class="nav-controls">
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="hi">हि</button>
+      <button class="lang-btn" data-lang="mr">म</button>
+      <button class="lang-btn" data-lang="te">తె</button>
+    </div>
+    <select class="role-picker" id="role-sel">
+      <option value="verifier">👤 Verifier / Kanungo</option>
+      <option value="operator">📁 Field Operator</option>
+      <option value="district">🏛️ District Collector</option>
+      <option value="admin">⚙️ System Admin (NIC)</option>
+    </select>
+    <button class="icon-btn" id="contrast-btn" title="Toggle Accessibility Mode">🌙</button>
+  </div>
+</div>
+
+<!-- ══ BODY ══════════════════════════════════════════ -->
+<div id="body">
+
+<!-- ── SIDEBAR ───────────────────────────────────────── -->
+<div id="sidebar">
+  <div>
+    <div class="sb-section-lbl" id="sb-lbl">Modules</div>
+    <button class="sb-btn active" data-view="review">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">⚡</div><span id="nav-review">AI Split-Screen Review</span></div>
+      <span class="sb-badge" id="review-badge">2</span>
+    </button>
+    <button class="sb-btn" data-view="queue">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">📂</div><span id="nav-queue">Document Queue</span></div>
+      <span class="sb-badge sky" id="queue-badge">5</span>
+    </button>
+    <button class="sb-btn" data-view="dashboard">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">📊</div><span id="nav-dash">Dashboard</span></div>
+    </button>
+    <button class="sb-btn" data-view="upload">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">☁️</div><span id="nav-upload">Bulk Upload</span></div>
+    </button>
+    <button class="sb-btn" data-view="analytics">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">📈</div><span id="nav-analytics">Analytics</span></div>
+    </button>
+    <button class="sb-btn" data-view="integrations">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">🔗</div><span id="nav-int">LRMS & GIS</span></div>
+    </button>
+    <button class="sb-btn" data-view="audit">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">📜</div><span id="nav-audit">Audit Trail</span></div>
+    </button>
+    <button class="sb-btn" data-view="admin">
+      <div style="display:flex;align-items:center;"><div class="sb-icon">⚙️</div><span id="nav-admin">Settings</span></div>
+    </button>
+  </div>
+  <div>
+    <div class="sb-widget">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-weight:600;color:var(--t2);" id="lbl-sla">Verification SLA</span>
+        <span style="color:var(--green);font-weight:700;font-family:var(--mono);">42s</span>
+      </div>
+      <div class="mini-bar"><div class="mini-bar-fill" id="sla-fill" style="width:60%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--t4);">
+        <span id="verified-lbl">1 Verified</span><span>Target 100%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTENT ────────────────────────────────────────── -->
+<div id="content">
+
+<!-- ══════════════════════════════════════════════════════
+     REVIEW VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-review" class="view active">
+  <!-- Breadcrumb -->
+  <div id="rev-bar">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <span class="rev-id" id="crumb-id">UP-VNS-2024-KH412</span>
+      <span class="badge b-amber" id="crumb-status">Needs Review</span>
+      <span style="font-size:0.75rem;color:var(--t3);" id="crumb-loc">Shivpur, Pindra, Varanasi, UP</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.76rem;">
+        <span style="color:var(--t3);">Overall Confidence:</span>
+        <span class="badge b-amber" id="crumb-conf">78%</span>
+      </div>
+      <button class="btn btn-ghost" style="padding:6px 10px;" onclick="prevRec()">◀</button>
+      <span style="font-size:0.75rem;color:var(--t3);font-family:var(--mono);" id="crumb-counter">1 / 5</span>
+      <button class="btn btn-ghost" style="padding:6px 10px;" onclick="nextRec()">▶</button>
+    </div>
+  </div>
+
+  <!-- Split -->
+  <div id="review-panels">
+
+    <!-- LEFT -->
+    <div id="doc-viewer">
+      <!-- Toolbar -->
+      <div id="doc-toolbar">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge b-blue" id="doc-fmt-tag" style="font-family:var(--mono);">PDF • 3.4 MB</span>
+          <span style="font-weight:600;font-size:0.8rem;color:var(--t2);" id="doc-fmt-id">UP-VNS-2024-KH412</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="display:flex;background:rgba(255,255,255,0.04);border:1px solid var(--border-1);border-radius:8px;padding:3px;gap:2px;">
+            <button onclick="setFilter('normal')" id="fn" class="icon-btn" style="padding:3px 9px;font-size:0.72rem;border:none;background:#3b82f6;color:#fff;">Natural</button>
+            <button onclick="setFilter('ink')" id="fi" class="icon-btn" style="padding:3px 9px;font-size:0.72rem;border:none;">Ink Boost</button>
+            <button onclick="setFilter('neg')" id="fg" class="icon-btn" style="padding:3px 9px;font-size:0.72rem;border:none;">Negative</button>
+          </div>
+          <button onclick="toggleBoxes()" id="box-btn" class="btn btn-ghost" style="padding:5px 10px;font-size:0.73rem;border-color:rgba(56,189,248,0.25);color:var(--sky);">🔲 Boxes</button>
+          <button onclick="zOut()" class="icon-btn" title="Zoom out">−</button>
+          <span style="font-size:0.73rem;font-family:var(--mono);min-width:36px;text-align:center;color:var(--t2);" id="zoom-lbl">100%</span>
+          <button onclick="zIn()" class="icon-btn" title="Zoom in">+</button>
+          <button onclick="rotate()" class="icon-btn" title="Rotate">↻</button>
+          <button onclick="resetView()" class="btn btn-ghost" style="padding:5px 10px;font-size:0.72rem;">Reset</button>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div id="doc-canvas">
+        <div id="doc-paper">
+          <!-- Aged paper decorations -->
+          <div class="doc-lines"></div>
+          <div class="doc-binding"></div>
+          <div class="doc-fold-line"></div>
+          <div class="doc-watermark">सत्यमेव<br>जयते</div>
+
+          <div class="doc-inner">
+            <!-- Header Strip -->
+            <div class="doc-header-strip">
+              <div>
+                <div class="doc-state-hi" id="dp-state-hi">उत्तर प्रदेश शासन</div>
+                <div class="doc-state-em" id="dp-state-em">Government of Uttar Pradesh — Board of Revenue</div>
+              </div>
+              <div class="ashoka-wheel">☸</div>
+            </div>
+
+            <!-- Metadata Bar -->
+            <div class="doc-meta-bar">
+              <div class="doc-meta-item"><span class="dmi-lbl">जनपद / District</span><span class="dmi-val" id="dp-dist">Varanasi</span></div>
+              <div class="doc-meta-item"><span class="dmi-lbl">तहसील / Tehsil</span><span class="dmi-val" id="dp-tehsil">Pindra</span></div>
+              <div class="doc-meta-item"><span class="dmi-lbl">परगना / Pargana</span><span class="dmi-val" id="dp-pargana">Pindra Sadar</span></div>
+              <div class="doc-meta-item"><span class="dmi-lbl">ग्राम / Village</span><span class="dmi-val" id="dp-village">Shivpur</span></div>
+              <div class="doc-meta-item"><span class="dmi-lbl">ग्राम कोड / Code</span><span class="dmi-val" style="font-family:var(--mono);" id="dp-code">201844</span></div>
+              <div class="doc-meta-item"><span class="dmi-lbl">वर्ष / Year</span><span class="dmi-val" style="font-family:var(--mono);" id="dp-year">2024–25</span></div>
+            </div>
+
+            <!-- Title -->
+            <div class="doc-title-row">
+              <div class="doc-title-main" id="dp-title">खतौनी (अधिकार अभिलेख) — भाग एक</div>
+              <div class="doc-title-sub" id="dp-title-sub">KHATONI (RECORD OF RIGHTS) — PART I &nbsp;|&nbsp; राजस्व संहिता उ.प्र. 2006, धारा 31</div>
+            </div>
+
+            <!-- Body -->
+            <div class="doc-body">
+              <table class="kh-table">
+                <thead>
+                  <tr>
+                    <th style="width:12%">खाता<br>संख्या</th>
+                    <th style="width:15%">खसरा / गाटा<br>संख्या</th>
+                    <th style="width:36%">भूस्वामी का नाम, पिता / पति का नाम<br><span style="font-size:0.6rem;font-weight:500;">(Name of Landowner, Father / Husband)</span></th>
+                    <th style="width:18%">क्षेत्रफल<br>(हेक्टेयर)</th>
+                    <th style="width:19%">मालगुजारी / राजस्व<br>(Revenue Assessment)</th>
+                  </tr>
+                  <tr class="kh-col-nums">
+                    <td>[1]</td><td>[2]</td><td>[3]</td><td>[4]</td><td>[5]</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="center"><span class="khasra-num" id="dp-khata">00058</span></td>
+                    <td class="center"><span class="khasra-num" id="dp-khasra">412/1</span></td>
+                    <td>
+                      <div class="field-name" id="dp-owner">रमेश चन्द्र शर्मा</div>
+                      <div class="field-father">पिता — <span id="dp-father">राम स्वरूप शर्मा</span></div>
+                      <div class="field-village">निवासी ग्राम — <span id="dp-village2">Shivpur</span>, तह. Pindra</div>
+                      <div class="field-share">स्वामित्व अंश — <span id="dp-share">1/2</span></div>
+                    </td>
+                    <td class="center">
+                      <div class="area-num" id="dp-area">1.4250</div>
+                      <div class="area-sub" id="dp-class">सिंचित / Sinchit<br>(Irrigated Agricultural)</div>
+                    </td>
+                    <td class="center">
+                      <div class="tax-num" id="dp-tax">₹ 142.50</div>
+                      <div style="font-size:0.6rem;color:#78521a;margin-top:2px;">अर्ध-वार्षिक / Half-yearly</div>
+                    </td>
+                  </tr>
+                  <tr class="mutation-row">
+                    <td colspan="5">
+                      <div class="mutation-label">आदेश / कैफियत (Orders & Remarks — Column 12) :</div>
+                      <div class="mutation-text cursive" id="dp-mutation">
+                        आदेश श्रीमान तहसीलदार महोदय, वाद सं. MUT-2018-9941 — बैनामा दिनांक 12/03/2018 (बही-क्र. 142, वर्ष 2018, उप-निबंधक Pindra) के आधार पर नामान्तरण दर्ज किया जाता है। भूमि का स्वामित्व रमेश चन्द्र शर्मा के पक्ष में 1/2 अंश दर्ज करें।
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Footer -->
+              <div class="doc-footer">
+                <div class="seal">
+                  <span class="seal-star">✦</span>
+                  <span class="seal-text">तहसीलदार<br>PINDRA</span>
+                  <span class="seal-star">✦</span>
+                  <span class="seal-text">प्रमाणित</span>
+                </div>
+                <div class="doc-sig">
+                  <span class="sig-line">R.K. Srivastava</span>
+                  <div style="font-family:var(--deva);font-size:0.72rem;font-weight:700;color:#2d4a22;">राजस्व निरीक्षक / लेखपाल</div>
+                  <div style="font-size:0.67rem;color:#78521a;margin-top:2px;">दिनांक: 14 / 08 / 2024</div>
+                  <div style="font-size:0.6rem;color:#9ca3af;margin-top:6px;font-family:var(--mono);">Digitized: DILRMP Batch #VNS-B8</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OCR Bounding Boxes (rendered over the inner doc) -->
+          <div id="ocr-wrap" style="position:absolute;inset:0;z-index:10;pointer-events:none;"></div>
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div id="doc-statusbar">
+        <div style="display:flex;gap:14px;">
+          <span class="legend-dot"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);opacity:0.7;"></span> High Confidence</span>
+          <span class="legend-dot"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--amber);opacity:0.7;"></span> Needs Check</span>
+          <span class="legend-dot"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);opacity:0.7;"></span> Low Confidence</span>
+        </div>
+        <span>Hover a field on the right to highlight its OCR region</span>
+      </div>
+    </div><!-- end doc-viewer -->
+
+    <!-- RIGHT: Fields -->
+    <div id="fields-panel">
+      <div id="fp-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+              <strong style="font-size:0.92rem;" id="fp-title">AI Extracted Fields</strong>
+              <span class="badge b-amber" id="fp-status">Needs Review</span>
+            </div>
+            <div style="font-size:0.71rem;color:var(--t3);" id="fp-hint">Verify each field against the scanned document. Click ✏️ to correct.</div>
+          </div>
+          <button onclick="toggleLowConf()" class="btn btn-ghost" id="lc-btn" style="padding:5px 10px;font-size:0.73rem;">⚠️ Low-Conf</button>
+        </div>
+      </div>
+      <div id="fp-alerts"></div>
+      <div id="fp-fields" class="scroll-y"></div>
+      <div id="fp-footer">
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="btn btn-danger" onclick="flagRescan()" id="btn-flag">🔍 Flag Re-scan</button>
+          <button class="btn btn-ghost" onclick="skipRec()" id="btn-skip">⏭ Skip</button>
+        </div>
+        <button class="btn btn-success" onclick="verifyRec()" id="btn-verify" style="padding:10px 22px;font-size:0.85rem;">✅ Accept & Verify</button>
+      </div>
+    </div>
+
+  </div><!-- review-panels -->
+</div><!-- view-review -->
+
+<!-- ══════════════════════════════════════════════════════
+     QUEUE VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-queue" class="view">
+  <div class="page-hdr"><h2>📂 Document Processing Queue</h2><p>All land records ingested and awaiting AI verification clearance.</p></div>
+  <div class="padded scroll-y">
+    <div class="card" style="padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div class="filter-strip" id="q-filters">
+        <button class="filter-chip active" data-filter="all">All (5)</button>
+        <button class="filter-chip" data-filter="needs_review">⏳ Needs Review (2)</button>
+        <button class="filter-chip" data-filter="verified">✅ Verified (1)</button>
+        <button class="filter-chip" data-filter="flagged_rescan">🔍 Flagged (1)</button>
+        <button class="filter-chip" data-filter="processing">⚙️ Processing (1)</button>
+      </div>
+      <div class="search-wrap">
+        <span style="color:var(--t3);">🔍</span>
+        <input class="search-input" id="q-search" placeholder="Search by Khasra, Owner, Village…" oninput="renderQueue()"/>
+      </div>
+    </div>
+    <div class="card" style="overflow:hidden;">
+      <table class="tbl"><thead><tr><th>Document</th><th>Location</th><th>Owner / Parcel</th><th>Confidence</th><th>Alerts</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+      <tbody id="q-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════════════════════ -->
+<div id="view-dashboard" class="view">
+  <div class="scroll-y padded">
+    <!-- Banner -->
+    <div class="card fade-in" style="padding:22px;background:linear-gradient(135deg,rgba(30,58,138,0.35),rgba(8,18,40,0.9));border-color:rgba(59,130,246,0.25);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span class="badge b-blue" id="dash-role-badge">VERIFIER</span>
+          <span style="font-size:0.72rem;color:var(--t3);">Session #DL-9082 &nbsp;•&nbsp; <span id="dash-date"></span></span>
+        </div>
+        <h2 style="font-size:1.4rem;font-weight:800;letter-spacing:-0.025em;" id="dash-welcome">Senior Verifier (Kanungo) — Tehsil Pindra</h2>
+        <p style="font-size:0.8rem;color:#93c5fd;margin-top:4px;">भू-अभिलेख AI — Intelligent Land Record Digitization Platform (DILRMP)</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="goView('review')">⚡ Start Reviewing (<span id="dash-pend">2</span> Pending)</button>
+        <button class="btn btn-ghost" onclick="goView('upload')">☁️ Upload Batch</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa;">🗂️</div>
+        <div class="kpi-lbl">Total Records Digitized</div>
+        <div class="kpi-val" style="color:var(--sky);">8,854</div>
+        <div class="kpi-sub up">📈 +18.4% this week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:rgba(16,185,129,0.15);color:#34d399;">✨</div>
+        <div class="kpi-lbl">AI Extraction Accuracy</div>
+        <div class="kpi-val" style="color:var(--green);">93.4%</div>
+        <div class="kpi-sub" style="color:var(--t3);">Target ≥ 90% (DILRMP)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:rgba(245,158,11,0.15);color:#fbbf24;">⏳</div>
+        <div class="kpi-lbl">Pending Verification</div>
+        <div class="kpi-val" style="color:var(--amber);" id="kpi-pend">2</div>
+        <div class="kpi-sub" style="color:var(--amber);">⚠️ Awaiting reviewer clearance</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:rgba(139,92,246,0.15);color:#c084fc;">⚡</div>
+        <div class="kpi-lbl">Avg Verification Speed</div>
+        <div class="kpi-val" style="color:#c084fc;">42s</div>
+        <div class="kpi-sub up">✓ Under 60s target</div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <!-- Chart -->
+      <div class="card" style="padding:20px;">
+        <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:3px;">Digitization Throughput</h3>
+        <p style="font-size:0.72rem;color:var(--t3);margin-bottom:14px;">Daily volume vs OCR accuracy this week</p>
+        <svg viewBox="0 0 480 160" style="width:100%;height:160px;">
+          <defs>
+            <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="40" y1="20" x2="460" y2="20" stroke="rgba(255,255,255,0.04)"/>
+          <line x1="40" y1="55" x2="460" y2="55" stroke="rgba(255,255,255,0.04)"/>
+          <line x1="40" y1="90" x2="460" y2="90" stroke="rgba(255,255,255,0.04)"/>
+          <line x1="40" y1="125" x2="460" y2="125" stroke="rgba(255,255,255,0.04)"/>
+          <text x="42" y="140" fill="#4a6885" font-size="9">Mon</text>
+          <text x="108" y="140" fill="#4a6885" font-size="9">Tue</text>
+          <text x="178" y="140" fill="#4a6885" font-size="9">Wed</text>
+          <text x="248" y="140" fill="#4a6885" font-size="9">Thu</text>
+          <text x="318" y="140" fill="#4a6885" font-size="9">Fri</text>
+          <text x="388" y="140" fill="#4a6885" font-size="9">Sat</text>
+          <text x="440" y="140" fill="#4a6885" font-size="9">Sun</text>
+          <path d="M50,115 L120,95 L190,108 L260,76 L330,52 L400,36 L450,30 L450,130 L50,130 Z" fill="url(#areaG)"/>
+          <path d="M50,115 L120,95 L190,108 L260,76 L330,52 L400,36 L450,30" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M50,60 L120,52 L190,44 L260,36 L330,30 L400,24 L450,20" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round"/>
+          <circle cx="450" cy="30" r="4" fill="#38bdf8"/>
+          <circle cx="450" cy="20" r="4" fill="#10b981"/>
+          <rect x="40" y="8" width="8" height="3" fill="#38bdf8" rx="1.5"/>
+          <text x="52" y="12" fill="#8faec9" font-size="8">Daily Volume</text>
+          <rect x="130" y="8" width="8" height="3" fill="#10b981" rx="1.5"/>
+          <text x="142" y="12" fill="#8faec9" font-size="8">Accuracy %</text>
+        </svg>
+      </div>
+      <!-- Record list -->
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;">
+        <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;">Priority Queue</h3>
+        <div id="dash-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;"></div>
+        <button class="btn btn-primary" onclick="goView('review')" style="margin-top:14px;width:100%;justify-content:center;">⚡ Open Verification Studio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     UPLOAD VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-upload" class="view">
+  <div class="page-hdr"><h2>☁️ Bulk Document Ingestion & AI OCR Pipeline</h2><p>Upload scanned land records — AI performs OCR, bilingual extraction & cadastral validation.</p></div>
+  <div class="padded scroll-y" style="padding-top:14px;">
+    <div class="g2" style="margin-bottom:16px;">
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+        <h3 style="font-weight:700;font-size:0.9rem;padding-bottom:10px;border-bottom:1px solid var(--border-1);">Batch Jurisdiction Metadata</h3>
+        <div><label style="font-size:0.74rem;font-weight:600;color:var(--t2);display:block;margin-bottom:5px;">State / UT</label>
+          <select id="up-state" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-1);border-radius:8px;padding:8px 12px;color:var(--t1);font-size:0.82rem;outline:none;">
+            <option>Uttar Pradesh (UP Bhulekh)</option>
+            <option>Maharashtra (Mahabhulekh 7/12)</option>
+            <option>Madhya Pradesh</option><option>Bihar (Biharbhumi)</option><option>Rajasthan (Apna Khata)</option>
+          </select></div>
+        <div class="g2">
+          <div><label style="font-size:0.74rem;font-weight:600;color:var(--t2);display:block;margin-bottom:5px;">District</label>
+            <input id="up-dist" value="Varanasi" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-1);border-radius:8px;padding:8px 12px;color:var(--t1);font-size:0.82rem;outline:none;"/></div>
+          <div><label style="font-size:0.74rem;font-weight:600;color:var(--t2);display:block;margin-bottom:5px;">Tehsil / Taluka</label>
+            <input id="up-teh" value="Pindra" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-1);border-radius:8px;padding:8px 12px;color:var(--t1);font-size:0.82rem;outline:none;"/></div>
+        </div>
+        <div><label style="font-size:0.74rem;font-weight:600;color:var(--t2);display:block;margin-bottom:5px;">Record Type</label>
+          <select id="up-type" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-1);border-radius:8px;padding:8px 12px;color:var(--t1);font-size:0.82rem;outline:none;">
+            <option>Khasra-Khatauni (RoR)</option><option>7/12 Extract (Saat-Baara)</option>
+            <option>Jamabandi (Register II)</option><option>Bhu-Naksha Cadastral Map</option><option>Mutation Deed</option>
+          </select></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="drop-zone" id="dz" onclick="simUpload('custom')">
+          <div style="font-size:2.8rem;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(59,130,246,0.3));">📁</div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">Drag & Drop or Click to Browse</div>
+          <p style="font-size:0.76rem;color:var(--t3);margin-bottom:16px;">PDF, JPG, PNG, TIFF — multi-page scanned ledgers welcome</p>
+          <button class="btn btn-primary" onclick="event.stopPropagation();simUpload('custom')">📤 Select Files</button>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;color:var(--amber);font-size:0.82rem;font-weight:700;">⚡ Quick Demo Presets</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <button class="btn btn-ghost" onclick="simUpload('UP Khasra')" style="justify-content:space-between;">📄 UP Khasra-Khatauni (300 DPI)<span>→</span></button>
+            <button class="btn btn-ghost" onclick="simUpload('MH 7/12')" style="justify-content:space-between;">📄 Maharashtra 7/12 Extract<span>→</span></button>
+            <button class="btn btn-ghost" onclick="simUpload('Bihar Jamabandi')" style="justify-content:space-between;">📄 Bihar Jamabandi (Historic)<span>→</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="pipeline-card" class="card fade-in" style="display:none;padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--sky);"><span class="spin" style="display:inline-block;">⟳</span><strong>Bhu-Vision AI Pipeline Running</strong></div>
+        <span style="font-family:var(--mono);color:var(--sky);font-size:0.82rem;" id="pp-pct">0%</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;margin-bottom:14px;">
+        <div id="pp-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#2563eb,#38bdf8,#10b981);border-radius:999px;transition:width 0.35s ease;"></div>
+      </div>
+      <div id="pp-steps" style="display:flex;flex-direction:column;gap:7px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ANALYTICS VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-analytics" class="view">
+  <div class="page-hdr"><h2>📈 National Digitization Analytics</h2><p>State saturation matrix, OCR accuracy by entity type, and discrepancy diagnostics.</p></div>
+  <div class="padded scroll-y" style="padding-top:14px;">
+    <div class="card" style="overflow:hidden;margin-bottom:18px;">
+      <div style="padding:16px 18px;display:flex;align-items:center;justify-content:space-between;">
+        <h3 style="font-size:0.95rem;font-weight:700;">State / UT Digitization Progress Matrix</h3>
+        <button class="btn btn-primary" style="font-size:0.76rem;" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+      <table class="tbl"><thead><tr><th>State</th><th>Districts</th><th>Villages</th><th>Digitized</th><th>Progress</th><th>OCR Accuracy</th><th>Status</th></tr></thead>
+      <tbody id="an-tbody"></tbody></table>
+    </div>
+    <div class="g2">
+      <div class="card" style="padding:18px;">
+        <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;">AI Accuracy by Field Category</h3>
+        <div id="an-fields" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;">Discrepancy Breakdown</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="card" style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;font-weight:700;font-size:0.82rem;margin-bottom:4px;"><span style="color:var(--amber);">GIS Area Delta &gt; 0.01 Ha</span><span style="font-family:var(--mono);">41.2%</span></div>
+            <p style="font-size:0.71rem;color:var(--t3);">Extracted area deviates from Bhu-Naksha polygon boundary.</p>
+          </div>
+          <div class="card" style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;font-weight:700;font-size:0.82rem;margin-bottom:4px;"><span style="color:var(--red);">Faded Ink / Low OCR &lt; 60%</span><span style="font-family:var(--mono);">32.8%</span></div>
+            <p style="font-size:0.71rem;color:var(--t3);">Historic Jamabandi volumes requiring 600 DPI flatbed rescan.</p>
+          </div>
+          <div class="card" style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;font-weight:700;font-size:0.82rem;margin-bottom:4px;"><span style="color:var(--sky);">Pending Mutation Conflict</span><span style="font-family:var(--mono);">18.5%</span></div>
+            <p style="font-size:0.71rem;color:var(--t3);">Unfinalized Dakhil-Kharij against same plot number.</p>
+          </div>
+          <div class="card" style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;font-weight:700;font-size:0.82rem;margin-bottom:4px;"><span style="color:var(--purple);">Owner Name Script Mismatch</span><span style="font-family:var(--mono);">7.5%</span></div>
+            <p style="font-size:0.71rem;color:var(--t3);">Devanagari to Roman transliteration variance in NGDRS.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     INTEGRATIONS VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-integrations" class="view">
+  <div class="page-hdr"><h2>🔗 LRMS, DILRMP & GIS Integration Hub</h2><p>Live national interoperability endpoints — DILRMP, Bhulekh, Bhu-Naksha & NGDRS.</p></div>
+  <div class="padded scroll-y" style="padding-top:14px;">
+    <div class="g2" id="int-grid" style="margin-bottom:18px;"></div>
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:1.1rem;">🗺️</span><h3 style="font-size:0.95rem;font-weight:700;">Bhu-Naksha Cadastral Parcel Map</h3></div>
+          <p style="font-size:0.72rem;color:var(--t3);margin-top:3px;">Village: Shivpur (201844) • Pindra Tehsil • Varanasi District</p></div>
+        <div style="display:flex;gap:14px;font-size:0.76rem;">
+          <span><span style="color:var(--green);">■</span> Verified</span>
+          <span><span style="color:var(--amber);">■</span> Active Review</span>
+          <span><span style="color:var(--t3);">▨</span> Public Land</span>
+        </div>
+      </div>
+      <div class="g2" style="gap:20px;">
+        <div style="background:#07101e;border-radius:10px;border:1px solid var(--border-1);padding:12px;position:relative;">
+          <svg viewBox="0 0 580 300" style="width:100%;height:260px;">
+            <polygon id="p410" class="parcel" data-plot="410" points="35,28 165,20 172,120 40,128" fill="rgba(16,185,129,0.12)" stroke="#10b981"/>
+            <text x="88" y="78" fill="#e2e8f0" font-size="13" font-weight="700">Gata 410</text><text x="90" y="96" fill="#8faec9" font-size="10">0.942 Ha</text>
+            <polygon id="p411" class="parcel" data-plot="411" points="165,20 335,12 344,112 172,120" fill="rgba(16,185,129,0.12)" stroke="#10b981"/>
+            <text x="234" y="70" fill="#e2e8f0" font-size="13" font-weight="700">Gata 411</text><text x="238" y="88" fill="#8faec9" font-size="10">1.120 Ha</text>
+            <polygon id="p412a" class="parcel sel" data-plot="412/1" points="40,128 172,120 180,252 38,262" fill="rgba(245,158,11,0.22)" stroke="#f59e0b" stroke-width="2.5"/>
+            <text x="88" y="192" fill="#fde047" font-size="14" font-weight="800">Plot 412/1</text><text x="78" y="212" fill="#fde68a" font-size="10">1.425 Ha  ★ ACTIVE</text>
+            <polygon id="p412b" class="parcel" data-plot="412/2" points="172,120 344,112 350,244 180,252" fill="rgba(16,185,129,0.12)" stroke="#10b981"/>
+            <text x="248" y="186" fill="#e2e8f0" font-size="13" font-weight="700">Plot 412/2</text><text x="252" y="204" fill="#8faec9" font-size="10">0.810 Ha</text>
+            <polygon id="p413" class="parcel" data-plot="413" points="335,12 545,28 548,268 350,244" fill="rgba(100,116,139,0.07)" stroke="#475569" stroke-dasharray="6,4"/>
+            <text x="420" y="140" fill="#8faec9" font-size="12" font-weight="700">Gata 413</text><text x="406" y="158" fill="#4a6885" font-size="10">Gram Sabha / Public</text><text x="418" y="172" fill="#4a6885" font-size="10">2.050 Ha</text>
+            <text x="18" y="292" fill="#2e4a63" font-size="9">Click any parcel to inspect attributes</text>
+          </svg>
+        </div>
+        <div class="card" style="padding:20px;" id="gis-detail">
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--t3);margin-bottom:8px;">CADASTRE ATTRIBUTES</div>
+          <div style="font-size:1.3rem;font-weight:800;color:var(--sky);font-family:var(--mono);margin-bottom:16px;" id="gis-pno">Khasra #412/1</div>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:0.82rem;">
+            <div><div style="font-size:0.69rem;color:var(--t3);margin-bottom:2px;">Registered Owner</div><div style="font-weight:700;" id="gis-own">Ramesh Chandra Sharma</div></div>
+            <div><div style="font-size:0.69rem;color:var(--t3);margin-bottom:2px;">Polygon Area (GIS)</div><div style="font-weight:800;color:var(--sky);font-family:var(--mono);" id="gis-area">1.4250 Ha</div></div>
+            <div><div style="font-size:0.69rem;color:var(--t3);margin-bottom:2px;">Registry Sync</div><div style="color:var(--amber);" id="gis-sync">⏳ Pending Kanungo Sign-off</div></div>
+            <div><div style="font-size:0.69rem;color:var(--t3);margin-bottom:2px;">Status</div><div><span class="badge b-amber" id="gis-status">Reviewing</span></div></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;width:100%;justify-content:center;" onclick="showToast('Synchronizing parcel with State Cadastre WFS…','info')">Re-verify Boundaries</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     AUDIT VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-audit" class="view">
+  <div class="page-hdr" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-bottom:0;">
+    <div><div style="display:flex;align-items:center;gap:8px;"><h2>📜 Immutable Audit Trail</h2><span class="badge b-green" style="font-size:0.65rem;">🔒 SHA-256</span></div><p>Every extraction, correction, override & verification — hash-chained.</p></div>
+    <button class="btn btn-ghost" onclick="showToast('Audit log cryptographically verified & exported.','success')">⬇ Export Signed Log</button>
+  </div>
+  <div class="padded scroll-y" style="padding-top:14px;">
+    <div class="card" style="overflow:hidden;">
+      <table class="tbl"><thead><tr><th>Timestamp</th><th>Document</th><th>Action</th><th>Actor</th><th>Details</th><th>Hash</th></tr></thead>
+      <tbody id="aud-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ADMIN VIEW
+════════════════════════════════════════════════════════ -->
+<div id="view-admin" class="view">
+  <div class="page-hdr"><h2>⚙️ System Configuration & Governance</h2><p>AI thresholds, RBAC permissions, and GIGW accessibility settings.</p></div>
+  <div class="padded scroll-y" style="padding-top:14px;">
+    <div class="g2">
+      <div class="card" style="padding:22px;display:flex;flex-direction:column;gap:18px;">
+        <h3 style="font-weight:700;font-size:0.95rem;">AI Model & Thresholds</h3>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.83rem;margin-bottom:4px;"><span style="font-weight:600;">Auto-Verification Threshold</span><span style="color:var(--sky);font-family:var(--mono);font-weight:700;" id="thresh-val">85%</span></div>
+          <input type="range" min="60" max="98" value="85" oninput="document.getElementById('thresh-val').textContent=this.value+'%'"/>
+          <p style="font-size:0.71rem;color:var(--t3);margin-top:4px;">Records above this confidence skip manual review and enter DILRMP directly.</p>
+        </div>
+        <div class="card" style="padding:12px;font-size:0.8rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--t2);font-weight:600;">Spatial Tolerance (GIS Delta)</span><span style="color:var(--amber);font-family:var(--mono);font-weight:700;">±0.02 Ha</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--t2);font-weight:600;">Auto Rescan Trigger Level</span><span style="color:var(--red);font-family:var(--mono);font-weight:700;">&lt; 50%</span></div>
+        </div>
+        <button class="btn btn-success" onclick="showToast('AI parameters saved!','success')">✅ Save Parameters</button>
+      </div>
+      <div class="card" style="padding:22px;">
+        <h3 style="font-weight:700;font-size:0.95rem;margin-bottom:14px;">Role & Clearance Matrix (RBAC)</h3>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:0.8rem;">
+          <div class="card" style="padding:12px;"><div style="display:flex;justify-content:space-between;font-weight:700;color:#60a5fa;margin-bottom:3px;"><span>Data Entry Operator</span><span>Upload Only</span></div><p style="font-size:0.71rem;color:var(--t3);">Can ingest batches and inspect status. Cannot approve or override.</p></div>
+          <div class="card" style="padding:12px;"><div style="display:flex;justify-content:space-between;font-weight:700;color:#34d399;margin-bottom:3px;"><span>Senior Verifier / Kanungo</span><span>Verify & Override</span></div><p style="font-size:0.71rem;color:var(--t3);">Full split-screen editing, OCR review, rule overrides with justification.</p></div>
+          <div class="card" style="padding:12px;"><div style="display:flex;justify-content:space-between;font-weight:700;color:#fbbf24;margin-bottom:3px;"><span>District Collector / ADM</span><span>Analytics & Sign-off</span></div><p style="font-size:0.71rem;color:var(--t3);">Executive monitoring, district reports, batch approvals.</p></div>
+          <div class="card" style="padding:12px;"><div style="display:flex;justify-content:space-between;font-weight:700;color:#c084fc;margin-bottom:3px;"><span>System Admin (NIC / DILRMP)</span><span>Full Access</span></div><p style="font-size:0.71rem;color:var(--t3);">API configs, tamper logs, national DILRMP sync controls.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+</div><!-- end body -->
+</div><!-- end app -->
+
+<!-- OVERRIDE MODAL -->
+<div id="modal-bg">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚖️ Rule Override — Justification Required</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem;color:var(--t2);line-height:1.55;">You are overriding an automated discrepancy flag. This will be permanently recorded in the DILRMP audit chain with your identity and legal justification.</p>
+      <div><label>Inspector's Justification / Field Verification Note:</label>
+        <textarea id="ov-reason" rows="4">Field inspection by Lekhpal confirms physical parcel boundaries match extracted area. Revenue inquiry #RI-2024-0412 filed.</textarea></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn" style="background:linear-gradient(135deg,#d97706,#92400e);color:#fff;box-shadow:0 2px 10px rgba(180,83,9,0.4);" onclick="doOverride()">⚖️ Confirm Override</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ZONE -->
+<div id="toast-zone"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════ */
+const RECS = [
+  {id:'r1',docNo:'UP-VNS-2024-KH412',state:'Uttar Pradesh',district:'Varanasi',tehsil:'Pindra',village:'Shivpur',
+    docType:'Khasra-Khatauni',status:'needs_review',conf:78,fmt:'PDF',size:'3.4 MB',uploader:'Amit Kumar (OP #UP-104)',
+    dpState:'Uttar Pradesh',dpStateHi:'उत्तर प्रदेश शासन',dpStateEm:'Government of Uttar Pradesh — Board of Revenue',
+    dpTitle:'खतौनी (अधिकार अभिलेख) — भाग एक',dpTitleSub:'KHATONI (RECORD OF RIGHTS) — PART I  |  राजस्व संहिता उ.प्र. 2006, धारा 31',
+    dpDist:'Varanasi',dpTehsil:'Pindra',dpPargana:'Pindra Sadar',dpVillage:'Shivpur',dpCode:'201844',dpYear:'2024–25',
+    dpKhata:'00058',dpKhasra:'412/1',dpOwner:'रमेश चन्द्र शर्मा',dpFather:'राम स्वरूप शर्मा',dpVillage2:'Shivpur',dpShare:'1/2',
+    dpArea:'1.4250',dpClass:'सिंचित / Sinchit (Irrigated Agricultural)',dpTax:'₹ 142.50',
+    dpMutation:'आदेश श्रीमान तहसीलदार महोदय, वाद सं. MUT-2018-9941 — बैनामा दिनांक 12/03/2018 के आधार पर नामान्तरण दर्ज।',
+    fields:[
+      {key:'khasra',label:'Khasra / Plot Number',lhi:'खसरा / गाटा संख्या',val:'412/1',conf:98,cat:'spatial'},
+      {key:'khata',label:'Khata / Account No.',lhi:'खाता संख्या',val:'00058',conf:94,cat:'spatial'},
+      {key:'owner',label:'Landowner Name',lhi:'भूस्वामी का नाम',val:'Ramesh Chandra Sharma (रमेश चन्द्र शर्मा)',conf:89,cat:'owner'},
+      {key:'father',label:"Father's Name",lhi:'पिता का नाम',val:'Ram Swaroop Sharma',conf:62,cat:'owner'},
+      {key:'area',label:'Area (Hectares)',lhi:'क्षेत्रफल',val:'1.4250',conf:92,cat:'spatial'},
+      {key:'class',label:'Land Classification',lhi:'भूमि श्रेणी',val:'Sinchit Krishi (Irrigated)',conf:95,cat:'tenure'},
+      {key:'share',label:'Ownership Share',lhi:'स्वामित्व अंश',val:'1/2 (50%)',conf:84,cat:'owner'},
+      {key:'mutation',label:'Mutation Reference',lhi:'दाखिल खारिज संदर्भ',val:'MUT-2018-9941 (Tehsildar)',conf:56,cat:'mutation'},
+      {key:'tax',label:'Annual Revenue',lhi:'वार्षिक लगान',val:'₹ 142.50',conf:88,cat:'tenure'},
+    ],
+    violations:[
+      {id:'v1',code:'GIS_AREA_DELTA_02',msg:'Extracted area (1.4250 Ha) has +0.02 Ha delta vs Bhu-Naksha polygon (1.4050 Ha).',msgHi:'दस्तावेज़ क्षेत्रफल भू-नक्शा से +0.02 हे. भिन्न है।'},
+      {id:'v2',code:'MUTATION_OCR_LOW',msg:'Handwritten mutation note OCR confidence 56%. Cross-verify with Tehsildar register.',msgHi:'हस्तलिखित आदेश OCR 56%। तहसीलदार रजिस्टर से जांच करें।'},
+    ],
+    boxes:[
+      {k:'khata', l:'5.6%', t:'30.5%', w:'12.5%', h:'5.2%', cls:'ok'},
+      {k:'khasra', l:'19.2%', t:'30.2%', w:'13%', h:'5.5%', cls:'ok'},
+      {k:'owner', l:'34%', t:'29.8%', w:'27%', h:'5.8%', cls:'ok'},
+      {k:'father', l:'34%', t:'35.8%', w:'24%', h:'4.8%', cls:'med'},
+      {k:'area', l:'62.5%', t:'30%', w:'15%', h:'7%', cls:'ok'},
+      {k:'mutation', l:'33%', t:'65%', w:'60%', h:'6.5%', cls:'low'},
+    ],
+  },
+  {id:'r2',docNo:'MH-PUN-2024-GAT284',state:'Maharashtra',district:'Pune',tehsil:'Haveli',village:'Wagholi',
+    docType:'7/12 Extract',status:'needs_review',conf:86,fmt:'JPG',size:'2.8 MB',uploader:'Pooja Patil (OP #MH-21)',
+    dpStateHi:'महाराष्ट्र शासन',dpStateEm:'Government of Maharashtra — Mahabhulekh',
+    dpTitle:'गाव नमुना ७/१२ (अधिकार अभिलेख)',dpTitleSub:'VILLAGE FORM 7/12 — Maharashtra Land Revenue Code 1966',
+    dpDist:'Pune',dpTehsil:'Haveli',dpPargana:'Haveli',dpVillage:'Wagholi',dpCode:'341022',dpYear:'2024–25',
+    dpKhata:'112',dpKhasra:'284/B',dpOwner:'तुकाराम गणपत शिंदे',dpFather:'गणपत शिंदे',dpVillage2:'Wagholi',dpShare:'पूर्ण',
+    dpArea:'0.8500',dpClass:'जिरायत / Jirayat (Dryland Kharif)',dpTax:'₹ 68.00',
+    dpMutation:'फेरफार क्र. 3410/2021 — बँक ऑफ महाराष्ट्र पीक कर्ज ₹1,50,000 इतर हक्कात नोंद।',
+    fields:[
+      {key:'khasra',label:'Gat / Survey No.',lhi:'गट / सर्वे संख्या',val:'284/B',conf:99,cat:'spatial'},
+      {key:'khata',label:'Khata Number',lhi:'खाता संख्या',val:'112',conf:96,cat:'spatial'},
+      {key:'owner',label:'Primary Holder',lhi:'मुख्य खातेदार',val:'Tukaram Ganpat Shinde',conf:92,cat:'owner'},
+      {key:'area',label:'Assessed Area (Ha)',lhi:'आकलित क्षेत्र',val:'0.8500',conf:97,cat:'spatial'},
+      {key:'class',label:'Land Type',lhi:'जमीन प्रकार',val:'Jirayat (Dryland Kharif)',conf:91,cat:'tenure'},
+      {key:'mutation',label:'Active Ferfar',lhi:'चालू फेरफार',val:'Ferfar 3410 / 2021',conf:76,cat:'mutation'},
+    ],
+    violations:[{id:'v3',code:'ENCUMBRANCE_FLAG',msg:'Bank of Maharashtra crop loan ₹1,50,000 noted in Other Rights column.',msgHi:'बँक भार ₹1,50,000 इतर हक्कात नोंदवले आहे।'}],
+    boxes:[
+      {k:'khasra',l:'9%',t:'29%',w:'15%',h:'6%',cls:'ok'},
+      {k:'owner',l:'40%',t:'28%',w:'30%',h:'7%',cls:'ok'},
+      {k:'area',l:'76%',t:'29%',w:'16%',h:'7%',cls:'ok'},
+    ],
+  },
+  {id:'r3',docNo:'MP-BHP-2024-KH189',state:'Madhya Pradesh',district:'Bhopal',tehsil:'Huzur',village:'Berasia',
+    docType:'Khasra-Khatauni',status:'verified',conf:96,fmt:'PDF',size:'1.9 MB',uploader:'Sunil Meena (OP #MP-09)',
+    dpStateHi:'मध्यप्रदेश शासन',dpStateEm:'Government of Madhya Pradesh — Revenue Department',
+    dpTitle:'खसरा / बी-1 (अधिकार अभिलेख)',dpTitleSub:'KHASRA REGISTER — MP Land Revenue Code 1959',
+    dpDist:'Bhopal',dpTehsil:'Huzur',dpPargana:'Huzur',dpVillage:'Berasia',dpCode:'482001',dpYear:'2024–25',
+    dpKhata:'089',dpKhasra:'189/2',dpOwner:'सुनीता बाई',dpFather:'रामदयाल वर्मा',dpVillage2:'Berasia',dpShare:'पूर्ण',
+    dpArea:'2.1000',dpClass:'सिंचित / Sinchit',dpTax:'₹ 210.00',
+    dpMutation:'भूमिस्वामी सुनीता बाई — राजस्व प्रकरण क्र. B1-2022-451 — विरासत प्रमाण पत्र के आधार पर।',
+    fields:[
+      {key:'khasra',label:'Khasra No.',lhi:'खसरा क्रमांक',val:'189/2',conf:99,cat:'spatial'},
+      {key:'owner',label:'Bhumiswami Name',lhi:'भूमिस्वामी नाम',val:'Sunita Bai (सुनीता बाई)',conf:97,cat:'owner'},
+      {key:'area',label:'Area (Ha)',lhi:'क्षेत्रफल',val:'2.1000',conf:99,cat:'spatial'},
+      {key:'class',label:'Type of Holding',lhi:'धारण प्रकार',val:'Bhumiswami (Private Agricultural)',conf:98,cat:'tenure'},
+    ],
+    violations:[],boxes:[],
+  },
+  {id:'r4',docNo:'BR-PAT-2024-JAM821',state:'Bihar',district:'Patna',tehsil:'Danapur',village:'Khagaul',
+    docType:'Jamabandi',status:'flagged_rescan',conf:48,fmt:'TIFF',size:'5.2 MB',uploader:'Rajiv Sinha (OP #BR-14)',
+    dpStateHi:'बिहार सरकार',dpStateEm:'Government of Bihar — Revenue & Land Reforms',
+    dpTitle:'जमाबंदी पंजी (Register II)',dpTitleSub:'JAMABANDI REGISTER — Bihar Land Reforms Act 1950',
+    dpDist:'Patna',dpTehsil:'Danapur',dpPargana:'Danapur',dpVillage:'Khagaul',dpCode:'800009',dpYear:'2024–25',
+    dpKhata:'—',dpKhasra:'821',dpOwner:'रामधारी सिंह (अपठनीय)',dpFather:'— (Unreadable)',dpVillage2:'Khagaul',dpShare:'—',
+    dpArea:'0.6500',dpClass:'दो फसली',dpTax:'₹ —',
+    dpMutation:'पुराना अभिलेख — स्याही फीकी। पुनः स्कैन हेतु अनुरोध प्रस्तुत।',
+    fields:[
+      {key:'khasra',label:'Khesra Number',lhi:'खेसरा संख्या',val:'821',conf:72,cat:'spatial'},
+      {key:'owner',label:'Raiyat Name',lhi:'रैयत का नाम',val:'Ramdhari Singh [Faded — अस्पष्ट]',conf:34,cat:'owner'},
+      {key:'father',label:"Father's Name",lhi:'पिता का नाम',val:'Unreadable / अपठनीय',conf:22,cat:'owner'},
+      {key:'area',label:'Raqba (Area)',lhi:'रकबा',val:'0.6500 Ha (2 Bigha 12 Katha)',conf:58,cat:'spatial'},
+    ],
+    violations:[{id:'v4',code:'DEGRADED_CRITICAL',msg:'Raiyat Name confidence 34% — below legal evidentiary threshold. 600 DPI rescan mandatory.',msgHi:'रैयत नाम OCR 34% — कानूनी सीमा से नीचे। पुनः स्कैन अनिवार्य।'}],
+    boxes:[
+      {k:'khasra',l:'11%',t:'34%',w:'18%',h:'7%',cls:'med'},
+      {k:'owner',l:'33%',t:'33%',w:'30%',h:'9%',cls:'low'},
+    ],
+  },
+  {id:'r5',docNo:'RJ-JPR-2024-KH304',state:'Rajasthan',district:'Jaipur',tehsil:'Sanganer',village:'Muhana',
+    docType:'Jamabandi',status:'processing',conf:65,fmt:'PNG',size:'4.1 MB',uploader:'Field Agent #RJ-08',
+    dpStateHi:'राजस्थान सरकार',dpStateEm:'Government of Rajasthan — Revenue Board',
+    dpTitle:'जमाबंदी (खसरा गिरदावरी)',dpTitleSub:'JAMABANDI — Rajasthan Land Revenue Act 1956',
+    dpDist:'Jaipur',dpTehsil:'Sanganer',dpPargana:'Sanganer',dpVillage:'Muhana',dpCode:'302029',dpYear:'2024–25',
+    dpKhata:'246',dpKhasra:'304',dpOwner:'भंवर लाल मीणा',dpFather:'रामलाल मीणा',dpVillage2:'Muhana',dpShare:'पूर्ण',
+    dpArea:'3.5000',dpClass:'चाही / Chahi (Irrigated Well)',dpTax:'₹ 350.00',
+    dpMutation:'गिरदावरी प्रविष्टि — खरीफ 2024 — खातेदार काश्तकार भंवर लाल मीणा।',
+    fields:[
+      {key:'khasra',label:'Khasra Number',lhi:'खसरा नंबर',val:'304',conf:88,cat:'spatial'},
+      {key:'owner',label:'Kashtkar Name',lhi:'काश्तकार का नाम',val:'Bhanwar Lal Meena (भंवर लाल मीणा)',conf:79,cat:'owner'},
+      {key:'area',label:'Area (Ha)',lhi:'रकबा',val:'3.5000',conf:85,cat:'spatial'},
+      {key:'class',label:'Land Category',lhi:'भूमि का प्रकार',val:'Chahi (Irrigated Well)',conf:80,cat:'tenure'},
+    ],
+    violations:[],boxes:[],
+  },
+];
+
+const AUDIT = [
+  {docNo:'UP-VNS-2024-KH412',ts:'2026-09-17T09:30:12Z',actor:'Amit Kumar',role:'operator',action:'UPLOAD',detail:'Scanned 300 DPI PDF ingested via batch #VNS-B8'},
+  {docNo:'UP-VNS-2024-KH412',ts:'2026-09-17T09:30:45Z',actor:'Bhu-Vision AI v3.2',role:'system',action:'AI_EXTRACT',detail:'Extracted 9 fields. 78% aggregate confidence. 2 rules flagged.'},
+  {docNo:'MH-PUN-2024-GAT284',ts:'2026-09-17T11:15:30Z',actor:'Pooja Patil',role:'operator',action:'UPLOAD',detail:'Color scan from Haveli Taluka Seva Kendra'},
+  {docNo:'MP-BHP-2024-KH189',ts:'2026-09-17T08:10:00Z',actor:'D. Joshi (Tehsildar)',role:'verifier',action:'VERIFY',detail:'All fields confirmed. Cleared for DILRMP sync.'},
+  {docNo:'BR-PAT-2024-JAM821',ts:'2026-09-17T15:45:00Z',actor:'A. Shrivastav (Kanungo)',role:'verifier',action:'RESCAN',detail:'Raiyat column faded. Dispatched for 600 DPI flatbed rescan.'},
+];
+
+const INTEGS = [
+  {id:'dilrmp',name:'DILRMP Central National Repository',code:'DILRMP-NAT',ep:'dilrmp.nic.in/api/v2/registry',lat:142,synced:18420,health:99.8,desc:'National Level Land Records Repository — DoLR, Ministry of Rural Development.'},
+  {id:'lrms',name:'State LRMS (UP Bhulekh / Mahabhulekh)',code:'STATE-LRMS',ep:'upbhulekh.gov.in/ws/rest',lat:86,synced:9240,health:99.4,desc:'Direct sync with State Revenue Department RoR and Mutation Registry.'},
+  {id:'gis',name:'Bhu-Naksha Cadastral GIS Engine',code:'BHU-NAKSHA',ep:'bhunaksha.gov.in/gis/wfs',lat:210,synced:6180,health:98.6,desc:'Spatial verification: validates extracted areas vs geo-referenced polygons.'},
+  {id:'ngdrs',name:'e-Sub-Registrar (NGDRS)',code:'NGDRS-REG',ep:'ngdrs.gov.in/api/v1/deeds',lat:175,synced:4210,health:97.9,desc:'Cross-verifies mutations with registered sale deeds.'},
+];
+
+const GIS_P = {
+  '410':{own:'Vikram Singh',area:'0.9420 Ha',sync:'Synced with DILRMP',status:'Verified'},
+  '411':{own:'Rajendra Prasad',area:'1.1200 Ha',sync:'Synced with DILRMP',status:'Verified'},
+  '412/1':{own:'Ramesh Chandra Sharma',area:'1.4250 Ha',sync:'Pending Kanungo Sign-off',status:'Reviewing'},
+  '412/2':{own:'Mahesh Chandra Sharma',area:'0.8100 Ha',sync:'Synced with DILRMP',status:'Verified'},
+  '413':{own:'Gram Sabha (Panchayat)',area:'2.0500 Ha',sync:'Synced',status:'Public Land'},
+};
+
+const STATE_DATA = [
+  {s:'Maharashtra',d:36,v:20200,dg:18420,p:91,acc:94.8,st:'Leading'},
+  {s:'Uttar Pradesh',d:75,v:16800,dg:14112,p:84,acc:92.4,st:'Active'},
+  {s:'Madhya Pradesh',d:52,v:12400,dg:9796,p:79,acc:95.1,st:'Active'},
+  {s:'Rajasthan',d:50,v:14200,dg:10224,p:72,acc:91.2,st:'Active'},
+  {s:'Bihar',d:38,v:11400,dg:7068,p:62,acc:87.6,st:'Lagging'},
+];
+
+const FIELD_ACC = [
+  {l:'Khasra / Gat Plot Number',a:98.4},
+  {l:'Khata / Account Number',a:96.2},
+  {l:'Land Area (Hectares)',a:95.8},
+  {l:'Landowner Name (Bilingual)',a:91.4},
+  {l:'Revenue / Classification',a:89.2},
+  {l:'Handwritten Mutation Notes',a:72.6},
+];
+
+const PIPE_STEPS = [
+  '1. Document ingestion & page detection…',
+  '2. De-skew, deskew & contrast normalization…',
+  '3. Multilingual OCR — Devanagari / Modi Script…',
+  '4. NLP entity extraction (Owner, Khasra, Area, Mutation)…',
+  '5. Cross-referencing Bhu-Naksha cadastral polygons…',
+  '✓ Pipeline complete! Record added to verification queue.',
+];
+
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+let curIdx=0, zoom=100, rot=0, filterMode='normal', showBoxes=true, lowConfOnly=false, editKey=null, qFilter='all', overVid=null, intStatus={};
+INTEGS.forEach(i=>intStatus[i.id]='operational');
+
+const R = ()=>RECS[curIdx];
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════ */
+function goView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+  if(id==='review')renderReview();
+  if(id==='queue')renderQueue();
+  if(id==='dashboard')renderDash();
+  if(id==='analytics')renderAnalytics();
+  if(id==='integrations')renderIntegrations();
+  if(id==='audit')renderAudit();
+}
+document.querySelectorAll('.sb-btn').forEach(b=>{if(b.dataset.view)b.addEventListener('click',()=>goView(b.dataset.view));});
+
+/* ══════════════════════════════════════════════════════
+   REVIEW VIEW
+══════════════════════════════════════════════════════ */
+const confCls=(c)=>c>=85?'b-green':c>=60?'b-amber':'b-red';
+const confColor=(c)=>c>=85?'#10b981':c>=60?'#f59e0b':'#ef4444';
+const boxCls=(c)=>c>=85?'ok':c>=60?'med':'low';
+
+function renderReview(){
+  const r=R();
+  // breadcrumb
+  el('crumb-id').textContent=r.docNo;
+  el('crumb-loc').textContent=`${r.village}, ${r.tehsil}, ${r.district}, ${r.state}`;
+  const sc={needs_review:'b-amber',verified:'b-green',flagged_rescan:'b-red',processing:'b-blue'};
+  const sl={needs_review:'Needs Review',verified:'Verified',flagged_rescan:'Re-scan',processing:'Processing'};
+  setClass(el('crumb-status'),'badge '+sc[r.status]);el('crumb-status').textContent=sl[r.status]||r.status;
+  setClass(el('crumb-conf'),'badge '+confCls(r.conf));el('crumb-conf').textContent=r.conf+'%';
+  el('crumb-counter').textContent=`${curIdx+1} / ${RECS.length}`;
+
+  // doc toolbar
+  el('doc-fmt-tag').textContent=r.fmt+' • '+r.size;
+  el('doc-fmt-id').textContent=r.docNo;
+
+  // doc paper fields
+  const dp=(id,v)=>{const e=el(id);if(e)e.textContent=v||'—';};
+  dp('dp-state-hi',r.dpStateHi); dp('dp-state-em',r.dpStateEm);
+  dp('dp-title',r.dpTitle); dp('dp-title-sub',r.dpTitleSub);
+  dp('dp-dist',r.dpDist); dp('dp-tehsil',r.dpTehsil); dp('dp-pargana',r.dpPargana);
+  dp('dp-village',r.dpVillage); dp('dp-code',r.dpCode); dp('dp-year',r.dpYear);
+  dp('dp-khata',r.dpKhata); dp('dp-khasra',r.dpKhasra);
+  dp('dp-owner',r.dpOwner); dp('dp-father',r.dpFather);
+  dp('dp-village2',r.dpVillage2); dp('dp-share',r.dpShare);
+  dp('dp-area',r.dpArea); dp('dp-class',r.dpClass);
+  dp('dp-tax',r.dpTax); dp('dp-mutation',r.dpMutation);
+
+  // fp header
+  setClass(el('fp-status'),'badge '+sc[r.status]);el('fp-status').textContent=sl[r.status]||r.status;
+
+  renderBoxes(); renderAlerts(); renderFields(); applyTransform(); applyFilter(); updateStats();
+}
+
+function renderBoxes(){
+  const wrap=el('ocr-wrap'); wrap.innerHTML='';
+  if(!showBoxes) return;
+  const r=R();
+  r.boxes.forEach(b=>{
+    const f=r.fields.find(f=>f.key===b.k);
+    const c=f?f.conf:80;
+    const div=document.createElement('div');
+    div.className='ocr-box '+boxCls(c);
+    div.style.cssText=`left:${b.l};top:${b.t};width:${b.w};height:${b.h};`;
+    div.id='box-'+b.k;
+    const tt=document.createElement('div');
+    tt.className='ocr-tooltip';
+    tt.textContent=(f?f.label:b.k)+' — '+c+'%';
+    div.appendChild(tt);
+    div.addEventListener('mouseenter',()=>litField(b.k,true));
+    div.addEventListener('mouseleave',()=>litField(b.k,false));
+    wrap.appendChild(div);
+  });
+}
+
+function renderAlerts(){
+  const r=R(); const p=el('fp-alerts');
+  if(!r.violations.length){p.style.display='none';return;}
+  p.style.display='block';
+  p.innerHTML=`<div style="display:flex;align-items:center;gap:6px;color:var(--amber);font-size:0.76rem;font-weight:700;margin-bottom:8px;">⚠️ Cadastral Validation Alerts (${r.violations.length})</div>`;
+  r.violations.forEach(v=>{
+    p.innerHTML+=`<div class="alert-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span class="alert-code">${v.code}</span>
+        ${v._ov?'<span style="font-size:0.68rem;color:var(--green);font-weight:700;">✓ Overridden</span>':''}
+      </div>
+      <div class="alert-msg">${v.msg}</div>
+      ${v._ov?`<div style="font-size:0.69rem;color:var(--green);margin-top:4px;">Reason: "${v._reason}"</div>`:''}
+      ${!v._ov?`<button class="alert-override-btn" onclick="openModal('${v.id}')">Override Rule →</button>`:''}
+    </div>`;
+  });
+}
+
+function renderFields(){
+  const r=R(); const c=el('fp-fields'); c.innerHTML='';
+  const cats=[
+    {id:'spatial',lbl:'1. Spatial & Cadastral Data'},
+    {id:'owner',lbl:'2. Ownership & Holder Rights'},
+    {id:'tenure',lbl:'3. Classification & Revenue'},
+    {id:'mutation',lbl:'4. Mutation & Orders'},
+  ];
+  cats.forEach(cat=>{
+    let flds=r.fields.filter(f=>f.cat===cat.id);
+    if(lowConfOnly) flds=flds.filter(f=>f.conf<85);
+    if(!flds.length) return;
+    const grp=document.createElement('div');grp.style.marginBottom='14px';
+    grp.innerHTML=`<div class="fp-group-lbl">${cat.lbl}</div>`;
+    flds.forEach(f=>{
+      const mono=cat.id==='spatial'?' mono':'';
+      const d=document.createElement('div');
+      d.className='field-card'; d.id='fc-'+f.key;
+      d.innerHTML=`
+        <div class="field-top">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="field-lbl">${f.label}</span>
+            ${f._ed?'<span class="field-edited">Edited</span>':''}
+          </div>
+          <div class="field-actions">
+            <span class="badge ${confCls(f.conf)}" style="font-family:var(--mono);font-size:0.67rem;">${f.conf}%</span>
+            <button class="edit-btn" onclick="startEdit('${f.key}')" title="Edit">✏️</button>
+          </div>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${f.conf}%;background:${confColor(f.conf)};"></div></div>
+        <div class="field-val${mono}" id="fv-${f.key}" style="margin-top:6px;">${f.val}</div>
+        <div class="edit-wrap" id="ew-${f.key}">
+          <input class="field-input" id="fi-${f.key}" value="${f.val}" onkeydown="fKey(event,'${f.key}')"/>
+          <button class="btn btn-success" style="padding:6px 10px;" onclick="saveEdit('${f.key}')">✔</button>
+          <button class="btn btn-ghost" style="padding:6px 10px;" onclick="cancelEdit()">✕</button>
+        </div>`;
+      d.addEventListener('mouseenter',()=>litField(f.key,true));
+      d.addEventListener('mouseleave',()=>litField(f.key,false));
+      grp.appendChild(d);
+    });
+    c.appendChild(grp);
+  });
+}
+
+function litField(k,on){
+  const fc=el('fc-'+k); if(fc)fc.classList.toggle('lit',on);
+  const bx=el('box-'+k); if(bx)bx.classList.toggle('lit',on);
+}
+
+// Edit
+function startEdit(k){cancelEdit();editKey=k;el('ew-'+k).classList.add('show');el('fi-'+k).focus();}
+function cancelEdit(){if(!editKey)return;el('ew-'+editKey)?.classList.remove('show');editKey=null;}
+function fKey(e,k){if(e.key==='Enter')saveEdit(k);if(e.key==='Escape')cancelEdit();}
+function saveEdit(k){
+  const r=R();const f=r.fields.find(f=>f.key===k);if(!f)return;
+  f.val=el('fi-'+k).value;f._ed=true;f.conf=Math.max(f.conf,96);
+  AUDIT.unshift({docNo:r.docNo,ts:new Date().toISOString(),actor:'Active Verifier',role:'verifier',action:'FIELD_EDIT',detail:`"${f.label}" corrected → "${f.val}"`});
+  cancelEdit();showToast(`"${f.label}" updated & versioned.`,'info');renderFields();renderBoxes();
+}
+
+// Canvas controls
+const zIn=()=>{zoom=Math.min(zoom+15,250);applyTransform();};
+const zOut=()=>{zoom=Math.max(zoom-15,50);applyTransform();};
+const rotate=()=>{rot=(rot+90)%360;applyTransform();};
+const resetView=()=>{zoom=100;rot=0;filterMode='normal';applyTransform();applyFilter();updateFilterBtns();};
+function applyTransform(){el('doc-paper').style.transform=`scale(${zoom/100}) rotate(${rot}deg)`;el('zoom-lbl').textContent=zoom+'%';}
+function setFilter(m){filterMode=m;applyFilter();updateFilterBtns();}
+function applyFilter(){const m={normal:'',ink:'contrast(1.8) brightness(1.06)',neg:'invert(1) hue-rotate(180deg) contrast(1.3)'};el('doc-paper').style.filter=m[filterMode]||'';}
+function updateFilterBtns(){['fn','fi','fg'].forEach((id,i)=>{const m=['normal','ink','neg'][i];const b=el(id);if(!b)return;b.style.background=filterMode===m?'#3b82f6':'transparent';b.style.color=filterMode===m?'#fff':'var(--t2)';});}
+function toggleBoxes(){showBoxes=!showBoxes;const b=el('box-btn');b.style.background=showBoxes?'rgba(56,189,248,0.12)':'transparent';b.style.color=showBoxes?'var(--sky)':'var(--t2)';renderBoxes();}
+function toggleLowConf(){lowConfOnly=!lowConfOnly;const b=el('lc-btn');b.style.background=lowConfOnly?'rgba(239,68,68,0.12)':'rgba(255,255,255,0.05)';b.style.color=lowConfOnly?'var(--red)':'var(--t2)';renderFields();}
+
+function prevRec(){curIdx=(curIdx-1+RECS.length)%RECS.length;renderReview();}
+function nextRec(){curIdx=(curIdx+1)%RECS.length;renderReview();}
+function skipRec(){showToast('Skipped. Moving to next record.','info');nextRec();}
+
+function verifyRec(){
+  const r=R();if(r.status==='verified'){showToast('Already verified!','info');return;}
+  r.status='verified';
+  AUDIT.unshift({docNo:r.docNo,ts:new Date().toISOString(),actor:'Active Verifier',role:'verifier',action:'VERIFY',detail:'Verified & cleared for DILRMP sync.'});
+  showToast(`✅ ${r.docNo} verified and approved for DILRMP sync!`,'success');
+  updateStats();renderReview();
+  const next=RECS.findIndex((x,i)=>i!==curIdx&&x.status==='needs_review');
+  if(next>=0){curIdx=next;setTimeout(renderReview,400);}
+}
+
+function flagRescan(){
+  const r=R();r.status='flagged_rescan';
+  AUDIT.unshift({docNo:r.docNo,ts:new Date().toISOString(),actor:'Active Verifier',role:'verifier',action:'RESCAN',detail:'Flagged for 600 DPI rescan.'});
+  showToast('Flagged for field rescan.','warn');updateStats();renderReview();
+}
+
+/* ══════════════════════════════════════════════════════
+   OVERRIDE MODAL
+══════════════════════════════════════════════════════ */
+function openModal(vid){overVid=vid;el('modal-bg').classList.add('open');}
+function closeModal(){el('modal-bg').classList.remove('open');overVid=null;}
+function doOverride(){
+  const reason=el('ov-reason').value.trim();if(!reason){showToast('Enter justification.','error');return;}
+  const v=R().violations.find(v=>v.id===overVid);if(v){v._ov=true;v._reason=reason;}
+  AUDIT.unshift({docNo:R().docNo,ts:new Date().toISOString(),actor:'Active Verifier',role:'verifier',action:'OVERRIDE',detail:`Rule "${overVid}" overridden: "${reason}"`});
+  showToast('Override recorded in tamper-proof audit trail.','warn');closeModal();renderAlerts();
+}
+
+/* ══════════════════════════════════════════════════════
+   QUEUE
+══════════════════════════════════════════════════════ */
+function renderQueue(){
+  const q=(el('q-search')?.value||'').toLowerCase();
+  let recs=RECS;
+  if(qFilter!=='all') recs=recs.filter(r=>r.status===qFilter);
+  if(q) recs=recs.filter(r=>r.docNo.toLowerCase().includes(q)||r.village.toLowerCase().includes(q)||r.fields.some(f=>f.val.toLowerCase().includes(q)));
+  const sc={needs_review:'b-amber',verified:'b-green',flagged_rescan:'b-red',processing:'b-blue'};
+  const sl={needs_review:'Needs Review',verified:'✅ Verified',flagged_rescan:'🔍 Re-scan',processing:'⚙️ Processing'};
+  const tbody=el('q-tbody');
+  tbody.innerHTML=recs.length?recs.map(r=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:10px;">
+      <div style="padding:9px;border-radius:8px;background:rgba(56,189,248,0.08);color:var(--sky);font-size:1rem;">📄</div>
+      <div><div style="font-weight:700;font-family:var(--mono);font-size:0.82rem;">${r.docNo}</div>
+      <div style="font-size:0.69rem;color:var(--t3);">${r.docType} • ${r.fmt} (${r.size})</div></div></div></td>
+    <td><div style="font-weight:600;">${r.village}</div><div style="font-size:0.7rem;color:var(--t3);">${r.tehsil}, ${r.district}</div></td>
+    <td><div style="font-weight:600;">${r.fields.find(f=>f.key==='owner')?.val||'—'}</div>
+      <div style="font-size:0.7rem;color:var(--t2);">Khasra: <span style="font-family:var(--mono);color:var(--sky);font-weight:700;">${r.fields.find(f=>f.key==='khasra')?.val||'—'}</span></div></td>
+    <td><span class="badge ${confCls(r.conf)}" style="font-family:var(--mono);">${r.conf}%</span></td>
+    <td>${r.violations.length?`<span style="color:var(--amber);font-size:0.76rem;font-weight:600;">⚠️ ${r.violations.length}</span>`:'<span style="color:var(--green);font-size:0.74rem;">✓</span>'}</td>
+    <td><span class="badge ${sc[r.status]||''}" style="font-size:0.65rem;">${sl[r.status]||r.status}</span></td>
+    <td style="text-align:right;"><button class="btn btn-primary" style="font-size:0.76rem;padding:6px 12px;" onclick="selRec(${RECS.indexOf(r)})">Review →</button></td>
+  </tr>`).join(''):`<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--t3);">No records found.</td></tr>`;
+}
+
+function selRec(i){curIdx=i;goView('review');}
+
+document.querySelectorAll('.filter-chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); qFilter=c.dataset.filter; renderQueue();
+  });
+});
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════ */
+function renderDash(){
+  const pend=RECS.filter(r=>r.status==='needs_review').length;
+  const ver=RECS.filter(r=>r.status==='verified').length;
+  el('dash-pend').textContent=pend;el('kpi-pend').textContent=pend;
+  const roleMap={verifier:'Senior Verifier (Kanungo) — Tehsil Pindra',operator:'Data Entry Operator — Batch Portal',district:'District Collector Office — Analytics View',admin:'National Project Directorate (NIC / DILRMP)'};
+  el('dash-welcome').textContent=roleMap[el('role-sel').value]||roleMap.verifier;
+  el('dash-role-badge').textContent='ROLE: '+el('role-sel').value.toUpperCase().replace('_',' ');
+  el('dash-date').textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  const sc={needs_review:'b-amber',verified:'b-green',flagged_rescan:'b-red',processing:'b-blue'};
+  const sl={needs_review:'Needs Review',verified:'Verified',flagged_rescan:'Re-scan',processing:'Processing'};
+  el('dash-list').innerHTML=RECS.slice(0,4).map((r,i)=>`<div onclick="selRec(${i})" style="background:rgba(255,255,255,0.03);border:1px solid var(--border-1);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all 0.15s;" onmouseenter="this.style.borderColor='rgba(56,189,248,0.25)'" onmouseleave="this.style.borderColor='var(--border-1)'">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">
+        <span style="font-weight:700;font-size:0.82rem;font-family:var(--mono);">${r.docNo}</span>
+        <span class="badge ${sc[r.status]||''}" style="font-size:0.62rem;">${sl[r.status]||r.status}</span>
+      </div>
+      <div style="font-size:0.7rem;color:var(--t3);">${r.village}, ${r.district}</div></div>
+      <span class="badge ${confCls(r.conf)}" style="font-family:var(--mono);font-size:0.68rem;">${r.conf}%</span>
+    </div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   ANALYTICS
+══════════════════════════════════════════════════════ */
+function renderAnalytics(){
+  el('an-tbody').innerHTML=STATE_DATA.map(r=>`<tr>
+    <td style="font-weight:700;">${r.s}</td>
+    <td style="color:var(--t2);">${r.d}</td>
+    <td style="color:var(--t2);">${r.v.toLocaleString()}</td>
+    <td style="font-weight:700;color:var(--sky);font-family:var(--mono);">${r.dg.toLocaleString()}</td>
+    <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:${r.p}%;background:${r.p>=80?'#10b981':r.p>=70?'#f59e0b':'#ef4444'};"></div></div><span style="font-size:0.76rem;font-weight:700;min-width:30px;">${r.p}%</span></div></td>
+    <td style="font-weight:700;color:var(--green);font-family:var(--mono);">${r.acc}%</td>
+    <td><span class="badge ${r.p>=80?'b-green':'b-amber'}" style="font-size:0.64rem;">${r.st}</span></td>
+  </tr>`).join('');
+  el('an-fields').innerHTML=FIELD_ACC.map(f=>`<div>
+    <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:4px;">
+      <span style="font-weight:600;">${f.l}</span>
+      <span style="font-weight:700;font-family:var(--mono);color:${f.a>=90?'var(--green)':f.a>=80?'var(--amber)':'var(--red)'};">${f.a}%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="width:${f.a}%;background:${f.a>=90?'#10b981':f.a>=80?'#f59e0b':'#ef4444'};"></div></div>
+  </div>`).join('');
+}
+
+function exportCSV(){
+  const csv='State,Districts,Villages,Digitized,Progress%,Accuracy%\n'+STATE_DATA.map(r=>`${r.s},${r.d},${r.v},${r.dg},${r.p}%,${r.acc}%`).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`DILRMP_Analytics_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  showToast('Analytics CSV downloaded!','success');
+}
+
+/* ══════════════════════════════════════════════════════
+   INTEGRATIONS
+══════════════════════════════════════════════════════ */
+function renderIntegrations(){
+  el('int-grid').innerHTML=INTEGS.map(i=>{
+    const s=intStatus[i.id]||'operational';
+    const col=s==='operational'?'var(--green)':s==='syncing'?'var(--sky)':'var(--amber)';
+    return `<div class="card int-card">
+      <div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span class="badge b-blue" style="font-family:var(--mono);font-size:0.65rem;">${i.code}</span>
+        <div class="int-status"><div class="int-dot ${s==='operational'?'op':'sync'}" style="${s==='syncing'?'background:var(--sky);':''};background-color:${col};animation:${s==='operational'?'pulse 2s infinite':'none'};"></div><span style="color:${col};font-size:0.71rem;">${s.toUpperCase()}</span></div>
+      </div>
+      <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:5px;">${i.name}</h3>
+      <p style="font-size:0.72rem;color:var(--t3);line-height:1.45;">${i.desc}</p></div>
+      <div class="card" style="padding:10px 12px;font-size:0.74rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--t2);">Endpoint</span><span style="font-family:var(--mono);color:#93c5fd;">${i.ep}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--t2);">Latency / Uptime</span><span style="color:var(--green);font-weight:600;">${i.lat}ms (${i.health}%)</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--t2);">Synced Today</span><span style="font-weight:700;font-family:var(--mono);">${i.synced.toLocaleString()}</span></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border-1);">
+        <span style="font-size:0.7rem;color:var(--t3);">Last sync: Just now</span>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.73rem;" onclick="pingInt('${i.id}')">🔄 Ping</button>
+      </div></div>`;
+  }).join('');
+
+  document.querySelectorAll('.parcel').forEach(p=>{p.addEventListener('click',()=>selectParcel(p.dataset.plot));});
+}
+
+function selectParcel(id){
+  const d=GIS_P[id]||{};
+  el('gis-pno').textContent='Khasra #'+id;
+  el('gis-own').textContent=d.own||'—';
+  el('gis-area').textContent=d.area||'—';
+  el('gis-sync').textContent=(d.status==='Verified'?'✅ ':d.status==='Reviewing'?'⏳ ':'')+(d.sync||'—');
+  const bc={'Verified':'b-green','Reviewing':'b-amber','Public Land':'b-gray'};
+  setClass(el('gis-status'),'badge '+(bc[d.status]||'b-gray'));el('gis-status').textContent=d.status||'—';
+  document.querySelectorAll('.parcel').forEach(p=>p.classList.toggle('sel',p.dataset.plot===id));
+}
+
+function pingInt(id){
+  intStatus[id]='syncing';renderIntegrations();
+  showToast(`Testing ${id.toUpperCase()} handshake…`,'info');
+  setTimeout(()=>{intStatus[id]='operational';renderIntegrations();showToast(`Handshake OK — ${60+Math.floor(Math.random()*80)}ms`,'success');},1400);
+}
+
+/* ══════════════════════════════════════════════════════
+   AUDIT
+══════════════════════════════════════════════════════ */
+function renderAudit(){
+  const am={UPLOAD:{l:'INGEST',c:'#c084fc'},AI_EXTRACT:{l:'AI OCR',c:'#60a5fa'},VERIFY:{l:'VERIFIED',c:'#34d399'},
+    FIELD_EDIT:{l:'CORRECTION',c:'#38bdf8'},OVERRIDE:{l:'OVERRIDE',c:'#fbbf24'},RESCAN:{l:'RESCAN',c:'#f87171'}};
+  el('aud-tbody').innerHTML=AUDIT.map(a=>{
+    const ac=am[a.action]||{l:a.action,c:'#fff'};
+    const hash='sha256:'+Math.random().toString(36).slice(2,10)+'…';
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:0.72rem;color:var(--t3);white-space:nowrap;">${new Date(a.ts).toLocaleString()}</td>
+      <td style="font-weight:700;color:var(--sky);font-family:var(--mono);font-size:0.8rem;">${a.docNo}</td>
+      <td><span class="badge" style="background:${ac.c}18;color:${ac.c};border:1px solid ${ac.c}40;font-size:0.63rem;">${ac.l}</span></td>
+      <td><div style="font-weight:600;font-size:0.8rem;">${a.actor}</div><div style="font-size:0.67rem;color:var(--t3);text-transform:uppercase;">${a.role}</div></td>
+      <td style="font-size:0.76rem;color:var(--t2);max-width:220px;">${a.detail}</td>
+      <td style="font-family:var(--mono);font-size:0.66rem;color:var(--t3);">${hash}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   UPLOAD PIPELINE
+══════════════════════════════════════════════════════ */
+function simUpload(preset){
+  const card=el('pipeline-card');card.style.display='block';
+  const steps=el('pp-steps');steps.innerHTML='';
+  PIPE_STEPS.forEach(s=>{const d=document.createElement('div');d.className='pipeline-step ps-wait';d.innerHTML='<span style="opacity:0.4">○</span> '+s;steps.appendChild(d);});
+  let step=0;
+  const bar=el('pp-bar'),pct=el('pp-pct');
+  const tick=setInterval(()=>{
+    if(step<PIPE_STEPS.length){
+      const prev=steps.children[step-1];if(prev){prev.className='pipeline-step ps-done';prev.children[0].textContent='✓';}
+      steps.children[step].className='pipeline-step ps-run';steps.children[step].children[0].textContent='◉';
+      const p=Math.round(((step+1)/PIPE_STEPS.length)*100);bar.style.width=p+'%';pct.textContent=p+'%';step++;
+    } else {
+      if(steps.children[step-1])steps.children[step-1].className='pipeline-step ps-done';
+      clearInterval(tick);
+      const nr={...RECS[0],id:'r-'+Date.now(),docNo:`UP-VNS-2024-${Math.floor(100+Math.random()*900)}`,status:'needs_review',conf:Math.floor(75+Math.random()*20)};
+      RECS.unshift(nr);AUDIT.unshift({docNo:nr.docNo,ts:new Date().toISOString(),actor:'Batch Uploader',role:'operator',action:'UPLOAD',detail:`${preset} ingested.`});
+      showToast(`✅ ${nr.docNo} processed & added to queue!`,'success');updateStats();
+      setTimeout(()=>{card.style.display='none';},2000);
+    }
+  },380);
+}
+
+const dz=el('dz');
+if(dz){
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');simUpload('Drop');});
+}
+
+/* ══════════════════════════════════════════════════════
+   STATS & MISC
+══════════════════════════════════════════════════════ */
+function updateStats(){
+  const pend=RECS.filter(r=>r.status==='needs_review').length;
+  const ver=RECS.filter(r=>r.status==='verified').length;
+  el('pending-val').textContent=pend;el('verified-val').textContent=ver;
+  el('review-badge').textContent=pend;el('queue-badge').textContent=RECS.length;
+  el('verified-lbl').textContent=ver+' Verified';
+  el('sla-fill').style.width=Math.round(ver/RECS.length*100)+'%';
+}
+
+/* Lang */
+const TR={en:{sub:'Intelligent Land Record Digitization & Validation System',acc:'OCR Accuracy',pend:'Pending',sla:'Verification SLA'},
+  hi:{sub:'बुद्धिमान भूमि अभिलेख डिजिटलीकरण एवं सत्यापन प्रणाली',acc:'ओसीआर सटीकता',pend:'लंबित',sla:'सत्यापन SLA'},
+  mr:{sub:'बुद्धिमान जमीन नोंद डिजिटायझेशन व पडताळणी प्रणाली',acc:'OCR अचूकता',pend:'प्रलंबित',sla:'पडताळणी SLA'},
+  te:{sub:'తెలివైన భూ రికార్డుల డిజిటలైజేషన్ వ్యవస్థ',acc:'OCR ఖచ్చితత్వం',pend:'పెండింగ్',sla:'ధృవీకరణ వేగం'},
+};
+let curLang='en';
+document.querySelectorAll('.lang-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.lang-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');curLang=b.dataset.lang;
+    const t=TR[curLang]||TR.en;
+    el('brand-sub').textContent=t.sub;el('lbl-acc').textContent=t.acc;el('lbl-pend').textContent=t.pend;
+    el('lbl-sla').textContent=t.sla;
+    if(document.getElementById('view-review').classList.contains('active'))renderReview();
+  });
+});
+
+el('role-sel').addEventListener('change',()=>{showToast('Role switched: '+el('role-sel').options[el('role-sel').selectedIndex].text.replace(/^[^\s]+ /,''),'info');if(document.getElementById('view-dashboard').classList.contains('active'))renderDash();});
+
+let hiContrast=false;
+el('contrast-btn').addEventListener('click',()=>{hiContrast=!hiContrast;document.body.style.filter=hiContrast?'contrast(1.4)':'';el('contrast-btn').textContent=hiContrast?'☀️':'🌙';showToast(hiContrast?'High contrast on (GIGW)':'Standard mode','info');});
+
+/* Clock */
+function tick(){const e=el('cur-time');if(e)e.textContent=new Date().toLocaleTimeString('en-IN',{hour12:true});}
+setInterval(tick,1000);tick();
+
+/* Toast */
+function showToast(msg,type='info'){
+  const cls={success:'toast-s',info:'toast-i',warn:'toast-w',error:'toast-e'};
+  const ic={success:'✅',info:'ℹ️',warn:'⚠️',error:'❌'};
+  const t=document.createElement('div');
+  t.className='toast '+(cls[type]||'toast-i');
+  t.innerHTML=`<span>${ic[type]||'ℹ️'}</span><span>${msg}</span>`;
+  t.onclick=()=>t.remove();
+  el('toast-zone').appendChild(t);
+  setTimeout(()=>t.remove(),4500);
+}
+
+/* Helpers */
+function el(id){return document.getElementById(id);}
+function setClass(e,cls){if(e)e.className=cls;}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{renderReview();updateStats();initDemo();});
+
+/* ══════════════════════════════════════════════════════
+   DEMO / PRESENTATION MODE
+══════════════════════════════════════════════════════ */
+const DEMO_STEPS = [
+  {
+    view:'review', target:'#navbar',
+    title:'भू-अभिलेख AI — SIH 2024 Prototype',
+    body:'Intelligent Land Record Digitization & Validation Platform. Uses AI/OCR + NLP to extract, validate, and verify scanned government land records for DILRMP.',
+    pos:'bottom',
+  },
+  {
+    view:'review', target:'#doc-viewer',
+    title:'📄 Realistic Document Viewer',
+    body:'Left panel renders the actual scanned government document — UP Board of Revenue Khatauni format with aged-paper texture, official header, bilingual fields, stamp & signature.',
+    pos:'right',
+  },
+  {
+    view:'review', target:'#ocr-wrap',
+    title:'🔲 AI OCR Bounding Boxes',
+    body:'Colour-coded detection zones highlight every extracted field. 🟢 Green = High confidence (≥85%), 🟡 Amber = Needs check (60–84%), 🔴 Red = Low confidence / flag for rescan.',
+    pos:'right',
+  },
+  {
+    view:'review', target:'#fields-panel',
+    title:'⚡ AI-Extracted Structured Fields',
+    body:'Right panel shows all 9 structured fields extracted by the Bhu-Vision AI engine — each with confidence score and editable inline. Hover any field to highlight its OCR bounding box.',
+    pos:'left',
+  },
+  {
+    view:'review', target:'#fp-alerts',
+    title:'⚠️ Automated Cadastral Validation',
+    body:'Business rules run automatically — GIS area delta, mutation OCR confidence, encumbrance flags. Verifiers can override rules with a legal justification logged to the immutable audit chain.',
+    pos:'left',
+  },
+  {
+    view:'review', target:'#fp-footer',
+    title:'✅ One-Click Verification',
+    body:'Kanungo / Verifier can Accept & Verify, Flag for Rescan, or Skip. Every action is timestamped, SHA-256 hashed, and pushed to the DILRMP National Repository in real-time.',
+    pos:'top',
+  },
+  {
+    view:'queue', target:'#q-tbody',
+    title:'📂 Document Processing Queue',
+    body:'All ingested records with live status — Needs Review, Verified, Flagged, Processing. Searchable by Khasra number, owner name, or village. Filter by status in one click.',
+    pos:'top',
+  },
+  {
+    view:'upload', target:'#dz',
+    title:'☁️ Bulk AI Ingestion Pipeline',
+    body:'Upload scanned PDFs, JPGs, TIFFs. The 6-stage Bhu-Vision AI pipeline — de-skew, OCR, NLP extraction, cadastral cross-check — runs automatically and adds records to the queue.',
+    pos:'bottom',
+  },
+  {
+    view:'analytics', target:'#an-tbody',
+    title:'📈 National Progress Dashboard',
+    body:'Real-time state-wise saturation matrix showing districts, villages digitized, OCR accuracy percentage, and progress against DILRMP targets. Exportable as signed CSV for MRD reporting.',
+    pos:'top',
+  },
+  {
+    view:'integrations', target:'#int-grid',
+    title:'🔗 Live DILRMP & GIS Integration',
+    body:'Direct REST API handshake with DILRMP Central, State Bhulekh LRMS, Bhu-Naksha GIS cadastral engine, and NGDRS Sub-Registrar. All endpoints live-pingable from the UI.',
+    pos:'top',
+  },
+  {
+    view:'integrations', target:'#gis-detail',
+    title:'🗺️ Interactive Cadastral GIS Map',
+    body:'Bhu-Naksha vector parcel map with clickable polygons. Instantly shows owner, area, and registry sync state for any parcel — verifies extracted area matches the geo-referenced polygon.',
+    pos:'left',
+  },
+  {
+    view:'audit', target:'#aud-tbody',
+    title:'📜 Immutable SHA-256 Audit Trail',
+    body:'Every action — AI extraction, manual correction, rule override, verification — is cryptographically hash-chained. Tamper-evident log satisfies DILRMP governance and RTI requirements.',
+    pos:'top',
+  },
+  {
+    view:'review', target:'#navbar',
+    title:'🎉 Thank You — SIH 2024',
+    body:'भू-अभिलेख AI addresses PS #1702: Digitization of Cadastral Land Records using OCR/AI. End-to-end platform: Ingest → AI Extract → Human Review → DILRMP Sync. Zero Node.js — opens in any browser.',
+    pos:'bottom',
+  },
+];
+
+let demoIdx=0, demoActive=false, demoTimer=null;
+
+function initDemo(){
+  // inject styles
+  const st=document.createElement('style');
+  st.textContent=`
+  #demo-btn{
+    position:fixed;bottom:24px;left:24px;z-index:800;
+    display:flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,#7c3aed,#4f46e5);
+    color:#fff;border:none;border-radius:12px;
+    padding:11px 18px;font-size:0.82rem;font-weight:700;
+    cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.5);
+    transition:all 0.2s;font-family:var(--font);
+    animation:demoPulse 3s ease-in-out infinite;
+  }
+  @keyframes demoPulse{
+    0%,100%{box-shadow:0 4px 20px rgba(124,58,237,0.5);}
+    50%{box-shadow:0 4px 30px rgba(124,58,237,0.85),0 0 0 6px rgba(124,58,237,0.15);}
+  }
+  #demo-btn:hover{transform:translateY(-2px);background:linear-gradient(135deg,#6d28d9,#4338ca);}
+  #demo-btn.active{animation:none;background:linear-gradient(135deg,#dc2626,#b91c1c);box-shadow:0 4px 20px rgba(220,38,38,0.5);}
+
+  #demo-overlay{
+    display:none;position:fixed;inset:0;z-index:790;
+    pointer-events:none;
+  }
+  #demo-overlay.on{display:block;}
+
+  /* Spotlight */
+  #demo-spot{
+    position:fixed;z-index:791;border-radius:10px;
+    box-shadow:0 0 0 9999px rgba(0,0,0,0.72);
+    border:2px solid rgba(124,58,237,0.7);
+    transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+    pointer-events:none;
+  }
+
+  /* Callout card */
+  #demo-card{
+    position:fixed;z-index:795;
+    background:linear-gradient(160deg,#1e1040,#0f0b2e);
+    border:1px solid rgba(124,58,237,0.5);
+    border-radius:14px;
+    width:340px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 0 1px rgba(124,58,237,0.2);
+    transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow:hidden;
+    font-family:var(--font);
+  }
+  #demo-card-head{
+    background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(79,70,229,0.2));
+    padding:13px 16px;
+    border-bottom:1px solid rgba(124,58,237,0.25);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  #demo-card-title{
+    font-size:0.88rem;font-weight:800;color:#e9d5ff;
+    line-height:1.3;
+  }
+  #demo-card-body{
+    padding:14px 16px;
+    font-size:0.8rem;color:#c4b5fd;
+    line-height:1.6;
+  }
+  #demo-card-footer{
+    padding:10px 16px;
+    background:rgba(0,0,0,0.2);
+    border-top:1px solid rgba(124,58,237,0.15);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .demo-nav-btn{
+    border:1px solid rgba(124,58,237,0.4);
+    border-radius:8px;padding:6px 14px;
+    font-size:0.76rem;font-weight:700;cursor:pointer;
+    transition:all 0.15s;font-family:var(--font);
+  }
+  .demo-nav-btn.prev{background:rgba(255,255,255,0.04);color:#a78bfa;}
+  .demo-nav-btn.prev:hover{background:rgba(124,58,237,0.15);}
+  .demo-nav-btn.nxt{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-color:transparent;}
+  .demo-nav-btn.nxt:hover{background:linear-gradient(135deg,#6d28d9,#4338ca);}
+  .demo-nav-btn.done{background:linear-gradient(135deg,#059669,#047857);color:#fff;border-color:transparent;}
+  .demo-step-dots{display:flex;gap:4px;}
+  .demo-dot{width:6px;height:6px;border-radius:50%;background:rgba(124,58,237,0.25);transition:all 0.2s;}
+  .demo-dot.on{background:#a78bfa;transform:scale(1.3);}
+
+  /* Key hint bar */
+  #demo-keyhint{
+    position:fixed;bottom:80px;left:24px;z-index:800;
+    background:rgba(10,6,30,0.95);border:1px solid rgba(124,58,237,0.3);
+    border-radius:8px;padding:6px 12px;
+    font-size:0.69rem;color:#a78bfa;font-family:var(--font);
+    display:none;
+  }
+  #demo-keyhint.on{display:block;}
+  `;
+  document.head.appendChild(st);
+
+  // Inject elements
+  document.body.insertAdjacentHTML('beforeend',`
+  <button id="demo-btn" onclick="toggleDemo()">
+    <span id="demo-btn-icon">🎬</span>
+    <span id="demo-btn-lbl">Start Demo</span>
+  </button>
+  <div id="demo-overlay" class=""></div>
+  <div id="demo-spot" style="display:none;"></div>
+  <div id="demo-card" style="display:none;">
+    <div id="demo-card-head">
+      <div id="demo-card-title">Step Title</div>
+      <div style="font-size:0.7rem;color:#7c3aed;font-weight:700;" id="demo-step-num">1 / 13</div>
+    </div>
+    <div id="demo-card-body">Description</div>
+    <div id="demo-card-footer">
+      <div class="demo-step-dots" id="demo-dots"></div>
+      <div style="display:flex;gap:7px;">
+        <button class="demo-nav-btn prev" onclick="demoNav(-1)">← Prev</button>
+        <button class="demo-nav-btn nxt" id="demo-nxt-btn" onclick="demoNav(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+  <div id="demo-keyhint" class="">⌨️ &nbsp;<strong>← →</strong> navigate &nbsp;•&nbsp; <strong>Esc</strong> exit</div>
+  `);
+
+  // Keyboard support
+  document.addEventListener('keydown',e=>{
+    if(!demoActive) return;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') demoNav(1);
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp') demoNav(-1);
+    else if(e.key==='Escape') stopDemo();
+  });
+}
+
+function toggleDemo(){
+  if(demoActive) stopDemo();
+  else startDemo();
+}
+
+function startDemo(){
+  demoActive=true; demoIdx=0;
+  el('demo-btn').classList.add('active');
+  el('demo-btn-icon').textContent='⏹';
+  el('demo-btn-lbl').textContent='Stop Demo';
+  el('demo-overlay').classList.add('on');
+  el('demo-spot').style.display='block';
+  el('demo-card').style.display='block';
+  el('demo-keyhint').classList.add('on');
+  showDemoStep();
+  showToast('Demo mode started. Use ← → arrows or buttons to navigate.','info');
+}
+
+function stopDemo(){
+  demoActive=false;
+  el('demo-btn').classList.remove('active');
+  el('demo-btn-icon').textContent='🎬';
+  el('demo-btn-lbl').textContent='Start Demo';
+  el('demo-overlay').classList.remove('on');
+  el('demo-spot').style.display='none';
+  el('demo-card').style.display='none';
+  el('demo-keyhint').classList.remove('on');
+  showToast('Demo ended.','info');
+}
+
+function demoNav(dir){
+  const s=DEMO_STEPS;
+  demoIdx=Math.max(0,Math.min(demoIdx+dir,s.length-1));
+  if(demoIdx===s.length-1 && dir===1){
+    // check if already at last, if next pressed again, stop
+  }
+  showDemoStep();
+}
+
+function showDemoStep(){
+  const step=DEMO_STEPS[demoIdx];
+  const total=DEMO_STEPS.length;
+
+  // Switch view if needed
+  if(step.view){
+    goView(step.view);
+  }
+
+  // Update card content
+  el('demo-card-title').textContent=step.title;
+  el('demo-card-body').textContent=step.body;
+  el('demo-step-num').textContent=(demoIdx+1)+' / '+total;
+
+  // Dots
+  const dots=el('demo-dots');
+  dots.innerHTML='';
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='demo-dot'+(i===demoIdx?' on':'');
+    dots.appendChild(d);
+  }
+
+  // Last step button
+  const nxtBtn=el('demo-nxt-btn');
+  if(demoIdx===total-1){
+    nxtBtn.className='demo-nav-btn done';
+    nxtBtn.textContent='🎉 Finish';
+    nxtBtn.onclick=stopDemo;
+  } else {
+    nxtBtn.className='demo-nav-btn nxt';
+    nxtBtn.textContent='Next →';
+    nxtBtn.onclick=()=>demoNav(1);
+  }
+
+  // Spotlight target (after a brief delay for view to render)
+  setTimeout(()=>{
+    spotlightTarget(step.target, step.pos);
+  }, step.view ? 120 : 0);
+}
+
+function spotlightTarget(selector, pos){
+  const target = selector ? document.querySelector(selector) : null;
+  const spot = el('demo-spot');
+  const card = el('demo-card');
+  const pad = 10;
+
+  if(!target){
+    // center card
+    card.style.top='50%'; card.style.left='50%';
+    card.style.transform='translate(-50%,-50%)';
+    spot.style.display='none';
+    return;
+  }
+
+  const r = target.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  // Position spotlight
+  spot.style.display='block';
+  spot.style.left=(r.left-pad)+'px';
+  spot.style.top=(r.top-pad)+'px';
+  spot.style.width=(r.width+pad*2)+'px';
+  spot.style.height=(r.height+pad*2)+'px';
+
+  // Position callout card
+  const cw=340, ch=220;
+  const margin=16;
+  let cx, cy;
+
+  if(pos==='right'){
+    cx = r.right + pad + margin;
+    cy = r.top + r.height/2 - ch/2;
+  } else if(pos==='left'){
+    cx = r.left - pad - margin - cw;
+    cy = r.top + r.height/2 - ch/2;
+  } else if(pos==='bottom'){
+    cx = r.left + r.width/2 - cw/2;
+    cy = r.bottom + pad + margin;
+  } else { // top
+    cx = r.left + r.width/2 - cw/2;
+    cy = r.top - pad - margin - ch;
+  }
+
+  // Clamp within viewport
+  cx = Math.max(margin, Math.min(cx, vw - cw - margin));
+  cy = Math.max(margin, Math.min(cy, vh - ch - margin));
+
+  card.style.transform='none';
+  card.style.left=cx+'px';
+  card.style.top=cy+'px';
+}
+</script>
+</body>
+</html>
